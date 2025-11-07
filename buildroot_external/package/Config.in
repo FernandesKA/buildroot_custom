@@ -1,0 +1,3 @@
+source "$BR2_EXTERNAL_STC_PATH/package/cloudutils/Config.in"
+source "$BR2_EXTERNAL_STC_PATH/package/blwnet_xram/Config.in"
+source "$BR2_EXTERNAL_STC_PATH/package/i2c-bl808/Config.in"

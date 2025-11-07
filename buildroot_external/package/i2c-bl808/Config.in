@@ -1,0 +1,16 @@
+comment "i2c-bl808 needs a Linux kernel to be built"
+	depends on !BR2_LINUX_KERNEL
+
+config BR2_PACKAGE_I2C_BL808
+	bool "i2c-bl808"
+	depends on BR2_LINUX_KERNEL
+	help
+	  I2C controller driver for Bouffalo Lab BL808 SoC.
+	  
+	  This driver provides I2C master functionality for the BL808
+	  RISC-V based SoC, supporting standard and fast mode I2C
+	  communication with interrupt-based transfers and FIFO support.
+	  
+	  Compatible devices: "bflb,bl808-i2c"
+	  
+	  https://github.com/bouffalolab

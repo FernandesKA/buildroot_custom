@@ -1,0 +1,15 @@
+# Kernel module Makefile for i2c-bl808 driver
+
+obj-m := i2c-bl808.o
+
+# Build rules - called by Buildroot's kernel-module infrastructure
+all:
+	$(MAKE) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) -C $(KERNELDIR) M=$(PWD) modules
+
+clean:
+	$(MAKE) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) -C $(KERNELDIR) M=$(PWD) clean
+
+modules_install:
+	$(MAKE) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) -C $(KERNELDIR) M=$(PWD) modules_install
+
+.PHONY: all clean modules_install

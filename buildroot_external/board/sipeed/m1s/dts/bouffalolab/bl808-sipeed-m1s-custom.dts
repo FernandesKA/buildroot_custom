@@ -1,0 +1,182 @@
+// SPDX-License-Identifier: (GPL-2.0+ or MIT)
+
+/dts-v1/;
+
+#include "bl808.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/leds/common.h>
+#include <dt-bindings/pinctrl/pinctrl-bflb.h>
+
+/ {
+	model = "Sipeed M1s";
+	compatible = "sipeed,m1s", "bflb,bl808";
+
+	aliases {
+		serial0 = &mm_uart;
+	};
+
+	chosen {
+		stdout-path = "serial0:2000000n8";
+		bootargs = "console=ttyS0,2000000 loglevel=8 earlycon=sbi root=PARTLABEL=rootfs rootwait rootfstype=ext4";
+		linux,initrd-start = <0x0 0x52000000>;
+		linux,initrd-end = <0x0 0x52941784>;
+	};
+
+	memory@50000000 {
+		device_type = "memory";
+		reg = <0x50000000 0x04000000>;
+	};
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		m0_psram_reserved: m0_psram@53F00000 {
+			reg = <0x53F00000 0x100000>;
+			status = "okay";
+		};
+	};
+
+	flash@2000b000 {
+		compatible = "bflb,bl808-sflash";
+		reg = <0x2000b000 0x1000 0x40001000 0x1000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+	};
+
+	leds {
+        compatible = "gpio-leds";
+		status = "disabled";
+
+        led {
+            gpios = <&pinctrl 8 GPIO_ACTIVE_LOW>;
+        };
+    };
+
+	display_backlight: backlight {
+		compatible = "gpio-backlight";
+		gpios = <&pinctrl 11 GPIO_ACTIVE_HIGH>;
+		default-on;
+		status = "okay";
+	};
+
+	pwm-leds {
+		compatible = "pwm-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pwm_led_pins>;
+		status = "okay";
+
+		led-0 {
+			pwms = <&pwm0 0 500000 0>;
+			active-low;
+			max-brightness = <255>;
+			label = "pwm_led0";
+		};
+	};
+};
+
+&pinctrl {
+	status = "okay";
+
+	pwm_led_pins: pwm0-grp0 {
+		bflb,pin-function = <BFLB_PINMUX_FUNC_PWM0>;
+		bflb,pins = <0 8 &pin_cfg_default>;
+	};
+
+	mm_uart_pins: mm-uart-grp0 {
+		bflb,pin-function = <BFLB_PINMUX_FUNC_MM_UART>;
+		bflb,pins = <0 16 &pin_cfg_default>,
+					<0 17 &pin_cfg_default>;
+	};
+
+	display_spi_pins: display-spi-pins {
+		bflb,pin-function = <BFLB_PINMUX_FUNC_MM_SPI>;
+		bflb,pins = <0 19 &pin_cfg_default>, // sck
+					<0 25 &pin_cfg_default>, // mosi
+					<0 22 &pin_cfg_input_enable>; // miso
+	};
+
+	display_gpio_pins: display-gpio-pins {
+		bflb,pin-function = <BFLB_PINMUX_FUNC_GPIO>;
+		bflb,pins = <0 13 &pin_cfg_pullup>, // display dc pin
+					<0 24 &pin_cfg_pullup>; // display reset pin
+	};
+
+	i2c_2_pins: i2c-pins {
+		bflb,pin-function = <BFLB_PINMUX_FUNC_MM_I2C0>;
+		bflb,pins = <0 6 &pin_cfg_pullup>, // scl
+					<0 7 &pin_cfg_pullup>; // sda
+	};
+};
+
+&seceng {
+	status = "okay";
+};
+
+&i2c2 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c_2_pins>;
+	clock-frequency = <100000>; /* 100kHz */
+};
+
+&mm_uart {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&mm_uart_pins>;
+};
+
+&sdhci0 {
+	status = "okay";
+};
+
+&pwm0 {
+	status = "okay";
+};
+
+&pwm1 {
+	status = "okay";
+};
+
+&spi1 {
+
+	status = "okay";
+	num-cs = <1>;
+
+	cs-gpios = <&pinctrl 12 GPIO_ACTIVE_LOW>;
+	display@0 {
+		compatible = "polcd-p169h002-ctp", "panel-mipi-dbi-spi";
+		reg = <0>;
+		spi-max-frequency = <80000000>;
+
+		spi-cpha;
+
+		dc-gpios = <&pinctrl 13 GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&pinctrl 24 GPIO_ACTIVE_HIGH>;
+		write-only;
+
+		backlight = <&display_backlight>;
+
+		width-mm = <32>;
+		height-mm = <27>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&display_spi_pins>;
+
+		panel-timing {
+			hactive = <280>;
+			vactive = <240>;
+			hback-porch = <20>;
+			vback-porch = <0>;
+			clock-frequency = <0>;
+			hfront-porch = <0>;
+			hsync-len = <0>;
+			vfront-porch = <0>;
+			vsync-len = <0>;
+		};
+	};
+};
+
+&usb {
+	status = "okay";
+};
