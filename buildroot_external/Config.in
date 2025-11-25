@@ -1,12 +1,12 @@
 menu "Custom Packages"
-source "$BR2_EXTERNAL_STC_PATH/package/Config.in"
+source "$BR2_EXTERNAL_FKA_PATH/package/Config.in"
 endmenu
 
 menu "BootLoaders"
-source "$BR2_EXTERNAL_STC_PATH/boot/Config.in"
+source "$BR2_EXTERNAL_FKA_PATH/boot/Config.in"
 endmenu
 
 menu "Host Packages"
-source "$BR2_EXTERNAL_STC_PATH/package/Config.in.host"
+source "$BR2_EXTERNAL_FKA_PATH/package/Config.in.host"
 endmenu
 

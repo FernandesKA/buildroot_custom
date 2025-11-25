@@ -11,8 +11,8 @@
 
 ```
 git clone --recurse-submodules git@gitlab.stc-spb.ru:ohs/buildroot_custom.git
-export BR2_EXTERNAL_STC_PATH=$(pwd)/buildroot_external
+export BR2_EXTERNAL_FKA_PATH=$(pwd)/buildroot_external
 cd buildroot
-make BR2_EXTERNAL=$BR2_EXTERNAL_STC_PATH <config_name>
+make BR2_EXTERNAL=$BR2_EXTERNAL_FKA_PATH <config_name>
 make
 ```

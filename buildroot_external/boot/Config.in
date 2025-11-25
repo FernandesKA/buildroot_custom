@@ -1,1 +1,1 @@
-source "$BR2_EXTERNAL_STC_PATH/boot/oblfr/Config.in"
+source "$BR2_EXTERNAL_FKA_PATH/boot/oblfr/Config.in"
