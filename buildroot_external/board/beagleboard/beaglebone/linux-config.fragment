@@ -57,3 +57,7 @@ CONFIG_CMDLINE_EXTEND=y
 # Enable devicetree overlay
 CONFIG_OF_OVERLAY=y
 CONFIG_OF_DYNAMIC=y
+
+# Enable ssd1306 display support
+CONFIG_DRM_SSD130X=y
+CONFIG_DRM_SSD130X_I2C=y
