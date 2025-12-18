@@ -180,19 +180,21 @@
 };
 
 &i2c2 {
-	ssd1306@3c {
-		compatible = "solomon,ssd1306fb-i2c";
-		reg = <0x3c>;
-		solomon,width = <128>;
-		solomon,height = <64>;
-		solomon,page-offset = <0>;
-		solomon,com-offset = <0>;
-		solomon,prechargep1 = <1>;
-		solomon,prechargep2 = <15>;
-		solomon,dclk-div = <1>;
-		solomon,dclk-frq = <8>;
-		solomon,com-lrremap;
-		solomon,com-invdir;
-		solomon,contrast = <127>;
-	};
+    ssd1306: ssd1306@3c {
+        compatible = "solomon,ssd1306fb-i2c";
+        reg = <0x3c>;
+        solomon,width = <128>;
+        solomon,height = <64>;
+    };
+
+	bme280: bme280@76 {
+        compatible = "bosch,bme280";
+        reg = <0x76>;
+    };
+
+    ds3231: ds3231@68 {
+        compatible = "dallas,ds3231";
+        reg = <0x68>;
+    };
 };
+
