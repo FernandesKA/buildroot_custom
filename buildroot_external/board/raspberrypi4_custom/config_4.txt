@@ -26,3 +26,4 @@ gpu_mem_1024=100
 dtoverlay=miniuart-bt
 dtoverlay=mcp2515-can0,oscillator=12000000,interrupt=12
 dtoverlay=spi-bcm2835-overlay
+dtparam=i2c_arm=on
