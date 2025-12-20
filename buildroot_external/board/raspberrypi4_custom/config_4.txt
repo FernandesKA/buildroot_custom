@@ -27,3 +27,6 @@ dtoverlay=miniuart-bt
 dtoverlay=mcp2515-can0,oscillator=12000000,interrupt=12
 dtoverlay=spi-bcm2835-overlay
 dtparam=i2c_arm=on
+dtparam=i2c1=on
+dtoverlay=i2c-rtc,ds3231
+dtoverlay=ssd1306,inverted
