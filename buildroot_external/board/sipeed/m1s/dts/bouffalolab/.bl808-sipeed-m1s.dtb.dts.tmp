@@ -1,0 +1,490 @@
+# 0 "arch/riscv/boot/dts/bouffalolab/bl808-sipeed-m1s.dts"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/riscv/boot/dts/bouffalolab/bl808-sipeed-m1s.dts"
+
+
+/dts-v1/;
+
+# 1 "arch/riscv/boot/dts/bouffalolab/bl808.dtsi" 1
+
+
+
+
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h" 1
+# 7 "arch/riscv/boot/dts/bouffalolab/bl808.dtsi" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/mailbox/bflb-ipc.h" 1
+# 8 "arch/riscv/boot/dts/bouffalolab/bl808.dtsi" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/pinctrl/pinctrl-bflb.h" 1
+# 9 "arch/riscv/boot/dts/bouffalolab/bl808.dtsi" 2
+
+/ {
+ compatible = "bflb,bl808";
+ #address-cells = <1>;
+ #size-cells = <1>;
+
+ cpus {
+  timebase-frequency = <1000000>;
+  #address-cells = <1>;
+  #size-cells = <0>;
+
+  cpu0: cpu@0 {
+   compatible = "thead,c906", "riscv";
+   device_type = "cpu";
+   reg = <0>;
+   d-cache-block-size = <64>;
+   d-cache-sets = <256>;
+   d-cache-size = <32768>;
+   i-cache-block-size = <64>;
+   i-cache-sets = <128>;
+   i-cache-size = <32768>;
+   mmu-type = "riscv,sv39";
+   riscv,isa = "rv64imafdc";
+
+   cpu0_intc: interrupt-controller {
+    compatible = "riscv,cpu-intc";
+    interrupt-controller;
+    #address-cells = <0>;
+    #interrupt-cells = <1>;
+   };
+  };
+ };
+
+ xtal: xtal-clk {
+  compatible = "fixed-clock";
+  clock-frequency = <40000000>;
+  clock-output-names = "xtal";
+  #clock-cells = <0>;
+ };
+
+ mm_muxpll_160m: mm-muxpll-160m {
+  compatible = "fixed-clock";
+  clock-frequency = <160000000>;
+  clock-output-names = "mm-muxpll-160m";
+  #clock-cells = <0>;
+ };
+
+ sdh: sdh-clk {
+  compatible = "fixed-clock";
+  clock-frequency = <96000000>;
+  clock-output-names = "sdh";
+  #clock-cells = <0>;
+ };
+
+ rc32m: rc32m-clk {
+  compatible = "fixed-clock";
+  clock-frequency = <32000000>;
+  clock-output-names = "rc32m";
+  #clock-cells = <0>;
+ };
+
+ soc {
+  compatible = "simple-bus";
+  ranges;
+  interrupt-parent = <&plic>;
+  dma-noncoherent;
+  #address-cells = <1>;
+  #size-cells = <1>;
+
+  sys_ctrl: sys-ctrl@0x20000000 {
+   compatible = "syscon";
+   reg = <0x20000000 0x1000>;
+   status = "okay";
+   reg-io-width = <4>;
+  };
+
+  pds_ctrl: pds-ctrl@0x2000e000 {
+   compatible = "syscon";
+   reg = <0x2000e000 0x1000>;
+   status = "okay";
+   reg-io-width = <4>;
+  };
+
+  pinctrl: pinctrl@0x200008C4 {
+   compatible = "bflb,bl808-pinctrl";
+   reg = <0x200008C4 0x1000>;
+
+   status = "disabled";
+
+   gpio-controller;
+   #gpio-cells = <2>;
+   gpio-ranges = <&pinctrl 0 0 46>;
+
+   interrupt-controller;
+   #interrupt-cells = <2>;
+   interrupts-extended = <&m0ic 44>;
+
+
+
+
+
+
+   pin_cfg_default: pin-cfg-default {
+    bias-pull-pin-default;
+   };
+
+   pin_cfg_pullup: pin-cfg-pullup {
+    bias-pull-up;
+   };
+
+   pin_cfg_pulldown: pin-cfg-pulldown {
+    bias-pull-down;
+   };
+
+   pin_cfg_input_enable: pin-cfg-input-enable {
+    input-enable;
+   };
+
+   pin_cfg_output_enable: pin-cfg-output-enable {
+    output-enable;
+   };
+
+   pin_cfg_output_high: pin-cfg-output-high {
+    output-high;
+   };
+
+   pin_cfg_output_low: pin-cfg-output-low {
+    output-low;
+   };
+
+   pin_cfg_strength_0: pin-cfg-strength-0 {
+    drive-strength = <0>;
+   };
+
+   pin_cfg_strength_1: pin-cfg-strength-1 {
+    drive-strength = <1>;
+   };
+
+   pin_cfg_strength_2: pin-cfg-strength-2 {
+    drive-strength = <2>;
+   };
+
+   pin_cfg_strength_3: pin-cfg-strength-3 {
+    drive-strength = <3>;
+   };
+
+   sdh_pins: sdh-grp0 {
+    bflb,pin-function = <0>;
+    bflb,pins = <0 0 &pin_cfg_strength_2>,
+       <0 1 &pin_cfg_strength_2>,
+       <0 2 &pin_cfg_strength_2>,
+       <0 3 &pin_cfg_strength_2>,
+       <0 4 &pin_cfg_strength_2>,
+       <0 5 &pin_cfg_strength_2>;
+   };
+
+   qspi_flash_pins: qspi-flash-grp0 {
+    bflb,pin-function = <2>;
+    bflb,pins = <0 34 &pin_cfg_default>,
+       <0 35 &pin_cfg_default>,
+       <0 36 &pin_cfg_default>,
+       <0 37 &pin_cfg_default>,
+       <0 38 &pin_cfg_default>,
+       <0 39 &pin_cfg_default>;
+   };
+  };
+
+  seceng: seceng@0x20004000 {
+   compatible = "bflb,seceng";
+   reg = <0x20004000 0x1000>;
+   status = "disabled";
+  };
+# 208 "arch/riscv/boot/dts/bouffalolab/bl808.dtsi"
+  i2c2: i2c@30003000 {
+   compatible = "bflb,bl808-i2c";
+   reg = <0x30003000 0x1000>;
+   interrupts = <21 4>;
+   clocks = <&mm_muxpll_160m>;
+   clock-frequency = <400000>;
+   status = "disabled";
+  };
+
+  i2c3: i2c@30004000 {
+   compatible = "bflb,bl808-i2c";
+   reg = <0x30004000 0x1000>;
+   interrupts = <22 4>;
+   clocks = <&mm_muxpll_160m>;
+   clock-frequency = <400000>;
+   status = "disabled";
+  };
+
+  mm_uart: serial@30002000 {
+   compatible = "bflb,bl808-uart";
+   reg = <0x30002000 0x1000>;
+   interrupts = <20 4>;
+   clocks = <&xtal>;
+   status = "disabled";
+  };
+
+  uart1: serial@0x2000AA00 {
+   compatible = "bflb,bl808-uart";
+   reg = <0x2000AA00 0x0100>;
+   interrupts-extended = <&m0ic 30>;
+   clocks = <&xtal>;
+   status = "disabled";
+  };
+
+  sdhci0: sdhci@20060000 {
+   compatible = "bflb,bl808-sdhci";
+   reg = <0x20060000 0x100>;
+   interrupts-extended = <&m0ic 17>;
+   clocks = <&sdh>;
+   status = "disabled";
+   pinctrl-names = "default";
+   pinctrl-0 = <&sdh_pins>;
+  };
+
+  pwm0: pwm@2000a440 {
+   compatible = "bflb,bl808-pwm";
+   reg = <0x2000a440 0x40>;
+   clocks = <&xtal>;
+   #pwm-cells = <3>;
+   status = "disabled";
+  };
+
+  pwm1: pwm@2000a480 {
+   compatible = "bflb,bl808-pwm";
+   reg = <0x2000a480 0x40>;
+   clocks = <&xtal>;
+   #pwm-cells = <3>;
+   status = "disabled";
+  };
+
+  spi1: spi@30008000 {
+   compatible = "bflb,bl808-spi";
+   reg = <0x30008000 0x1000>;
+   interrupts-extended = <&plic 23 4>;
+   clocks = <&mm_muxpll_160m>;
+   #address-cells = <1>;
+   #size-cells = <0>;
+   syscon = <&sys_ctrl>;
+   bflb,fifo-depth = <32>;
+   bflb,max-bits-per-word = <32>;
+   status = "disabled";
+  };
+
+  usb: usb@20072000 {
+   compatible = "faraday,fotg210", "bflb,bl808-usb";
+   reg = <0x20072000 0x1000>;
+   interrupts-extended = <&m0ic 21>;
+   syscon = <&sys_ctrl>;
+   pds = <&pds_ctrl>;
+   status = "disabled";
+  };
+# 305 "arch/riscv/boot/dts/bouffalolab/bl808.dtsi"
+  m0ic: mcu-interrupt-controller@20000050 {
+   compatible = "bflb,bl808-mcu-irq";
+   reg = <0x20000050 0x18>;
+   interrupts = <81 4>;
+   interrupt-controller;
+   #address-cells = <0>;
+   #interrupt-cells = <1>;
+  };
+
+  plic: interrupt-controller@e0000000 {
+   compatible = "thead,c900-plic";
+   reg = <0xe0000000 0x4000000>;
+   interrupts-extended = <&cpu0_intc 0xffffffff>,
+           <&cpu0_intc 9>;
+   interrupt-controller;
+   #address-cells = <0>;
+   #interrupt-cells = <2>;
+   riscv,ndev = <82>;
+   status = "okay";
+  };
+
+  ipc {
+   compatible = "bflb-ipc";
+   interrupts = <54 4>;
+   status = "okay";
+  };
+
+  clint: timer@e4000000 {
+   compatible = "thead,c900-clint";
+   reg = <0xe4000000 0xc000>;
+   interrupts-extended = <&cpu0_intc 3>,
+           <&cpu0_intc 7>;
+  };
+ };
+};
+# 6 "arch/riscv/boot/dts/bouffalolab/bl808-sipeed-m1s.dts" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 7 "arch/riscv/boot/dts/bouffalolab/bl808-sipeed-m1s.dts" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/leds/common.h" 1
+# 8 "arch/riscv/boot/dts/bouffalolab/bl808-sipeed-m1s.dts" 2
+
+
+/ {
+ model = "Sipeed M1s";
+ compatible = "sipeed,m1s", "bflb,bl808";
+
+ aliases {
+  serial0 = &mm_uart;
+ };
+
+ chosen {
+  stdout-path = "serial0:2000000n8";
+  bootargs = "console=ttyS0,2000000 loglevel=8 earlycon=sbi mtdparts=bflb_sflash:128K(m0-ll),128K(d0-ll),704K(sbi-uboot),64K(uboot-env),4M(kernel),8M(rootfs),3M(rootfs-data) rootfstype=squashfs root=/dev/mtdblock5 init=/sbin/init.sh";
+  linux,initrd-start = <0x0 0x52000000>;
+  linux,initrd-end = <0x0 0x52941784>;
+ };
+
+ memory@50000000 {
+  device_type = "memory";
+  reg = <0x50000000 0x04000000>;
+ };
+ reserved-memory {
+  #address-cells = <1>;
+  #size-cells = <1>;
+  ranges;
+
+  m0_psram_reserved: m0_psram@53F00000 {
+   reg = <0x53F00000 0x100000>;
+   status = "okay";
+  };
+ };
+
+ flash@2000b000 {
+  compatible = "bflb,bl808-sflash";
+  reg = <0x2000b000 0x1000 0x40001000 0x1000>;
+  #address-cells = <1>;
+  #size-cells = <1>;
+ };
+
+ leds {
+        compatible = "gpio-leds";
+  status = "disabled";
+
+        led {
+            gpios = <&pinctrl 8 1>;
+        };
+    };
+
+ display_backlight: backlight {
+  compatible = "gpio-backlight";
+  gpios = <&pinctrl 11 0>;
+  default-on;
+  status = "okay";
+ };
+
+ pwm-leds {
+  compatible = "pwm-leds";
+  pinctrl-names = "default";
+  pinctrl-0 = <&pwm_led_pins>;
+  status = "okay";
+
+  led-0 {
+   pwms = <&pwm0 0 500000 0>;
+   active-low;
+   max-brightness = <255>;
+   label = "pwm_led0";
+  };
+ };
+};
+
+&pinctrl {
+ status = "okay";
+
+ pwm_led_pins: pwm0-grp0 {
+  bflb,pin-function = <16>;
+  bflb,pins = <0 8 &pin_cfg_default>;
+ };
+
+ mm_uart_pins: mm-uart-grp0 {
+  bflb,pin-function = <21>;
+  bflb,pins = <0 16 &pin_cfg_default>,
+     <0 17 &pin_cfg_default>;
+ };
+
+ display_spi_pins: display-spi-pins {
+  bflb,pin-function = <18>;
+  bflb,pins = <0 19 &pin_cfg_default>,
+     <0 25 &pin_cfg_default>,
+     <0 22 &pin_cfg_input_enable>;
+ };
+
+ display_gpio_pins: display-gpio-pins {
+  bflb,pin-function = <11>;
+  bflb,pins = <0 13 &pin_cfg_pullup>,
+     <0 24 &pin_cfg_pullup>;
+ };
+
+ i2c_2_pins: i2c-pins {
+  bflb,pin-function = <19>;
+  bflb,pins = <0 6 &pin_cfg_pullup>,
+     <0 7 &pin_cfg_pullup>;
+ };
+};
+
+&seceng {
+ status = "okay";
+};
+
+&i2c2 {
+ status = "okay";
+ pinctrl-names = "default";
+ pinctrl-0 = <&i2c_2_pins>;
+ clock-frequency = <100000>;
+};
+
+&mm_uart {
+ status = "okay";
+ pinctrl-names = "default";
+ pinctrl-0 = <&mm_uart_pins>;
+};
+
+&sdhci0 {
+ status = "okay";
+};
+
+&pwm0 {
+ status = "okay";
+};
+
+&pwm1 {
+ status = "okay";
+};
+
+&spi1 {
+
+ status = "okay";
+ num-cs = <1>;
+
+ cs-gpios = <&pinctrl 12 1>;
+ display@0 {
+  compatible = "polcd-p169h002-ctp", "panel-mipi-dbi-spi";
+  reg = <0>;
+  spi-max-frequency = <80000000>;
+
+  spi-cpha;
+
+  dc-gpios = <&pinctrl 13 0>;
+  reset-gpios = <&pinctrl 24 0>;
+  write-only;
+
+  backlight = <&display_backlight>;
+
+  width-mm = <32>;
+  height-mm = <27>;
+
+  pinctrl-names = "default";
+  pinctrl-0 = <&display_spi_pins>;
+
+  panel-timing {
+   hactive = <280>;
+   vactive = <240>;
+   hback-porch = <20>;
+   vback-porch = <0>;
+   clock-frequency = <0>;
+   hfront-porch = <0>;
+   hsync-len = <0>;
+   vfront-porch = <0>;
+   vsync-len = <0>;
+  };
+ };
+};
+
+&usb {
+ status = "okay";
+};

@@ -1,0 +1,7 @@
+bl808-sipeed-m1s.o: arch/riscv/boot/dts/bouffalolab/bl808-sipeed-m1s.dts \
+ arch/riscv/boot/dts/bouffalolab/bl808.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h \
+ scripts/dtc/include-prefixes/dt-bindings/mailbox/bflb-ipc.h \
+ scripts/dtc/include-prefixes/dt-bindings/pinctrl/pinctrl-bflb.h \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/leds/common.h

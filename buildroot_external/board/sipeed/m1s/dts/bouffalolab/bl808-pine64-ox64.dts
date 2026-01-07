@@ -1,0 +1,108 @@
+// SPDX-License-Identifier: (GPL-2.0+ or MIT)
+
+/dts-v1/;
+
+#include "bl808.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/leds/common.h>
+#include <dt-bindings/pinctrl/pinctrl-bflb.h>
+
+/ {
+	model = "Pine64 Ox64";
+	compatible = "pine64,ox64", "bflb,bl808";
+
+	aliases {
+		serial0 = &mm_uart;
+		serial1 = &uart1;
+	};
+
+	chosen {
+		stdout-path = "serial0:2000000n8";
+		bootargs = "console=ttyS0,2000000 loglevel=8 earlycon=sbi mtdparts=bflb_sflash:128K(m0-ll),128K(d0-ll),704K(sbi-uboot),64K(uboot-env),4M(kernel),8M(rootfs),3M(rootfs-data) rootfstype=squashfs root=/dev/mtdblock5 init=/sbin/init.sh";
+		linux,initrd-start = <0x0 0x52000000>;
+		linux,initrd-end = <0x0 0x52941784>;
+	};
+
+	memory@50000000 {
+		device_type = "memory";
+		reg = <0x50000000 0x04000000>;
+	};
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		m0_psram_reserved: m0_psram@53F00000 {
+			reg = <0x53F00000 0x100000>;
+			status = "okay";
+		};
+	};
+
+	flash@2000b000 {
+		compatible = "bflb,bl808-sflash";
+		reg = <0x2000b000 0x1000 0x40001000 0x1000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+	};
+};
+
+&pinctrl {
+	status = "okay";
+
+	mm_uart_pins: mm-uart-grp0 {
+		bflb,pin-function = <BFLB_PINMUX_FUNC_MM_UART>;
+		bflb,pins = <0 16 &pin_cfg_default>,
+					<0 17 &pin_cfg_default>;
+	};
+
+	spidev_pins: spidev-pins {
+		bflb,pin-function = <BFLB_PINMUX_FUNC_MM_SPI>;
+		bflb,pins = <0 23 &pin_cfg_default>, // sck
+					<0 21 &pin_cfg_default>, // mosi
+					<0 22 &pin_cfg_input_enable>; // miso
+	};
+};
+
+&seceng {
+	status = "okay";
+};
+
+&mm_uart {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&mm_uart_pins>;
+};
+
+&uart1 {
+	status = "okay";
+};
+
+&sdhci0 {
+	status = "okay";
+};
+
+&pwm0 {
+	status = "okay";
+};
+
+&pwm1 {
+	status = "okay";
+};
+
+&spi1 {
+	status = "okay";
+	num-cs = <1>;
+
+	cs-gpios = <&pinctrl 12 GPIO_ACTIVE_LOW>;
+	spidev@0 {
+		compatible = "lwn,bk4";
+		reg = <0>;
+		status = "okay";
+		pinctrl-names = "default";
+		pinctrl-0 = <&spidev_pins>;
+	};
+};
+
+&usb {
+	status = "okay";
+};
