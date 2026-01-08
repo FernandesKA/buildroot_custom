@@ -1,5 +1,5 @@
 
-Данные проект предоставляет поддержку плат на базе актуального buildroot, расширяя функциональность через BR2_EXTERNAL.
+Данные проект предоставляет поддержку плат на базе актуального buildroot для кастомных внутренних проектов, расширяя функциональность через BR2_EXTERNAL.
 
 В данном проекте поддержаны конфигурации таких плат, как:
 
@@ -10,7 +10,6 @@
 Как собрать образ?
 
 ```
-git clone --recurse-submodules git@gitlab.stc-spb.ru:ohs/buildroot_custom.git
 export BR2_EXTERNAL_FKA_PATH=$(pwd)/buildroot_external
 cd buildroot
 make BR2_EXTERNAL=$BR2_EXTERNAL_FKA_PATH <config_name>
