@@ -5,7 +5,6 @@
 #include "bl808.dtsi"
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/leds/common.h>
-#include <dt-bindings/pinctrl/pinctrl-bflb.h>
 
 / {
 	model = "Sipeed M1s";
