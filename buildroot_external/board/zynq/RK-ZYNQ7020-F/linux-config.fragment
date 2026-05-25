@@ -1,10 +1,10 @@
-# board/zynqmp_zcu106_custom_defconfig/linux-config.fragment
+# board/zynqmp_rk7020f_defconfig/linux-config.fragment
 CONFIG_SPI_SPIDEV=m
 CONFIG_SPI=y
 CONFIG_SPI_MASTER=y
-CONFIG_SPI_XILINX=y          # Xilinx SPI controller driver
-CONFIG_SPI_BITBANG=y         # SPI bitbang support
-CONFIG_SPI_SPIDEV=y          # User mode SPI device driver support
+CONFIG_SPI_XILINX=y
+CONFIG_SPI_BITBANG=y
+CONFIG_SPI_SPIDEV=y
 
 # Kernel debugging options
 CONFIG_DEBUG_KERNEL=y
