@@ -15,14 +15,57 @@
 	};
 	aliases {
 		ethernet0 = &gem0;
-		i2c0 = &i2c0;
-		i2c1 = &i2c1;
 		serial0 = &uart0;
-		spi0 = &qspi;
-		spi1 = &spi0;
 	};
 	memory@0 {
 		device_type = "memory";
 		reg = <0x0 0x40000000>;
+	};
+};
+
+&gem0 {
+	phy-mode = "rgmii-id";
+	status = "okay";
+	xlnx,ptp-enet-clock = <0x69f6bcb>;
+};
+&intc {
+	num_cpus = <2>;
+	num_interrupts = <96>;
+};
+&sdhci0 {
+	bootph-all;
+	status = "okay";
+	xlnx,has-cd = <0x1>;
+	xlnx,has-power = <0x0>;
+	xlnx,has-wp = <0x0>;
+};
+&uart0 {
+	bootph-all;
+	cts-override ;
+	device_type = "serial";
+	port-number = <0>;
+	status = "okay";
+};
+&clkc {
+	fclk-enable = <0x0>;
+	ps-clk-frequency = <33333333>;
+};
+
+&qspi {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	flash0: flash@0 {
+		partition@0 {
+			label = "qspi-boot";
+			reg = <0x00000000 0x00500000>;
+		};
+		partition@1 {
+			label = "qspi-kernel";
+			reg = <0x00500000 0x00a80000>;
+		};
+		partition@2 {
+			label = "qspi-bootenv";
+			reg = <0x00f80000 0x00020000>;
+		};
 	};
 };
