@@ -27,6 +27,7 @@
 	phy-mode = "rgmii-id";
 	status = "okay";
 	xlnx,ptp-enet-clock = <0x69f6bcb>;
+	local-mac-address = [02 4F A3 7C 1B E9];
 };
 &intc {
 	num_cpus = <2>;
