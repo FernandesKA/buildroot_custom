@@ -10,26 +10,33 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Checkout
+      - name: Checkout with submodules
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Set environment paths
         run: |
-          echo "BR2_EXTERNAL_FKA_PATH=$GITHUB_WORKSPACE/buildroot_external" >> $GITHUB_ENV
+          echo "BUILDROOT_DIR=$GITHUB_WORKSPACE/buildroot" >> $GITHUB_ENV
           echo "BR2_EXTERNAL=$GITHUB_WORKSPACE/buildroot_external" >> $GITHUB_ENV
 
-      - name: Configure Buildroot
-        working-directory: buildroot
+      - name: Sanity check
         run: |
-          make BR2_EXTERNAL=$BR2_EXTERNAL_FKA_PATH zynq_rk7020f_defconfig
+          ls -lah $BUILDROOT_DIR
+          ls -lah $BR2_EXTERNAL
+
+      - name: Configure Buildroot
+        working-directory: ${{ env.BUILDROOT_DIR }}
+        run: |
+          make BR2_EXTERNAL=$BR2_EXTERNAL zynq_rk7020f_defconfig
 
       - name: Build
-        working-directory: buildroot
+        working-directory: ${{ env.BUILDROOT_DIR }}
         run: |
           make -j$(nproc)
 
       - name: Show artifacts
-        working-directory: buildroot
+        working-directory: ${{ env.BUILDROOT_DIR }}
         run: |
           ls -lah output/images || true
 
