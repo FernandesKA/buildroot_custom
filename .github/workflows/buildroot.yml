@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: self-hosted
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     steps:
       - name: Checkout with submodules
         uses: actions/checkout@v4
@@ -49,7 +50,6 @@ jobs:
           path: |
             buildroot/output/images/sdcard.img
             buildroot/output/images/*_sdk-*.tar.gz
-
   release:
     name: Publish GitHub Release
     runs-on: ubuntu-latest
@@ -63,10 +63,8 @@ jobs:
         with:
           name: zynq-rk7020f-images
           path: artifacts
-
       - name: Show downloaded files
         run: find artifacts -type f | sort
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
