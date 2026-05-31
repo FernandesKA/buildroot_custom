@@ -9,15 +9,18 @@ jobs:
   build:
     runs-on: self-hosted
 
+    env:
+      GIT_SAFE_DIRECTORY: "*"
+
     steps:
+      - name: Preconfigure git (IMPORTANT for self-hosted runners)
+        run: |
+          git config --global --add safe.directory '*'
+
       - name: Checkout with submodules
         uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Fix git safe directory (self-hosted runner fix)
-        run: |
-          git config --global --add safe.directory '*'
 
       - name: Set environment paths
         run: |
