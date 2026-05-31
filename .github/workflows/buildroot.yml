@@ -53,4 +53,4 @@ jobs:
           name: zynq-rk7020f-images
           path: |
             buildroot/output/images/sdcard.img
-            buildroot/output/images/*_sdk_*.tar.gz
+            buildroot/output/images/*_sdk-*.tar.gz
