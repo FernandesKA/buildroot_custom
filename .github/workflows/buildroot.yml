@@ -13,12 +13,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: echo "deps already installed"
-
-      - name: Set BR2_EXTERNAL path
+      - name: Set environment paths
         run: |
           echo "BR2_EXTERNAL_FKA_PATH=$GITHUB_WORKSPACE/buildroot_external" >> $GITHUB_ENV
+          echo "BR2_EXTERNAL=$GITHUB_WORKSPACE/buildroot_external" >> $GITHUB_ENV
 
       - name: Configure Buildroot
         working-directory: buildroot
