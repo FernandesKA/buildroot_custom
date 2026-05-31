@@ -15,14 +15,23 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Fix git safe directory (self-hosted runner fix)
+        run: |
+          git config --global --add safe.directory '*'
+
       - name: Set environment paths
         run: |
+          echo "WORKSPACE_ROOT=$GITHUB_WORKSPACE" >> $GITHUB_ENV
           echo "BUILDROOT_DIR=$GITHUB_WORKSPACE/buildroot" >> $GITHUB_ENV
           echo "BR2_EXTERNAL=$GITHUB_WORKSPACE/buildroot_external" >> $GITHUB_ENV
 
       - name: Sanity check
         run: |
+          echo "=== WORKSPACE ==="
+          ls -lah $WORKSPACE_ROOT
+          echo "=== BUILDROOT ==="
           ls -lah $BUILDROOT_DIR
+          echo "=== EXTERNAL ==="
           ls -lah $BR2_EXTERNAL
 
       - name: Configure Buildroot
