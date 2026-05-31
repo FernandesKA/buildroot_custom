@@ -1,0 +1,76 @@
+name: Build Buildroot Zynq RK7020F
+on:
+  push:
+    branches: ["main", "runner_builder"]
+    tags:
+      - "v*"
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Set environment paths
+        run: |
+          echo "WORKSPACE_ROOT=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "BUILDROOT_DIR=$GITHUB_WORKSPACE/buildroot" >> $GITHUB_ENV
+          echo "BR2_EXTERNAL=$GITHUB_WORKSPACE/buildroot_external" >> $GITHUB_ENV
+      - name: Sanity check
+        run: |
+          echo "=== WORKSPACE ==="
+          ls -lah $WORKSPACE_ROOT
+          echo "=== BUILDROOT ==="
+          ls -lah $BUILDROOT_DIR
+          echo "=== EXTERNAL ==="
+          ls -lah $BR2_EXTERNAL
+      - name: Configure Buildroot
+        working-directory: ${{ env.BUILDROOT_DIR }}
+        run: |
+          make BR2_EXTERNAL=$BR2_EXTERNAL zynq_rk7020f_defconfig
+      - name: Build
+        working-directory: ${{ env.BUILDROOT_DIR }}
+        run: |
+          make -j$(nproc)
+      - name: Build SDK
+        working-directory: ${{ env.BUILDROOT_DIR }}
+        run: |
+          make sdk
+      - name: Show artifacts
+        working-directory: ${{ env.BUILDROOT_DIR }}
+        run: |
+          ls -lah output/images || true
+      - name: Upload images
+        uses: actions/upload-artifact@v4
+        with:
+          name: zynq-rk7020f-images
+          path: |
+            buildroot/output/images/sdcard.img
+            buildroot/output/images/*_sdk-*.tar.gz
+
+  release:
+    name: Publish GitHub Release
+    runs-on: ubuntu-latest
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: zynq-rk7020f-images
+          path: artifacts
+
+      - name: Show downloaded files
+        run: find artifacts -type f | sort
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "Release ${{ github.ref_name }}"
+          generate_release_notes: true
+          files: artifacts/*
