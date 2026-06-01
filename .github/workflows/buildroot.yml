@@ -1,7 +1,7 @@
 name: Build Buildroot Zynq RK7020F
 on:
   push:
-    branches: ["main", "runner_builder"]
+    branches: ["main", "zynqmp_zcu106_rev1_0"]
     tags:
       - "v*"
   workflow_dispatch:
