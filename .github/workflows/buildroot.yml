@@ -5,8 +5,9 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
+
 jobs:
-  build:
+  build-rk7020f:
     runs-on: self-hosted
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     steps:
@@ -50,19 +51,70 @@ jobs:
           path: |
             buildroot/output/images/sdcard.img
             buildroot/output/images/*_sdk-*.tar.gz
+
+  build-zcu106:
+    runs-on: self-hosted
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Set environment paths
+        run: |
+          echo "WORKSPACE_ROOT=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "BUILDROOT_DIR=$GITHUB_WORKSPACE/buildroot" >> $GITHUB_ENV
+          echo "BR2_EXTERNAL=$GITHUB_WORKSPACE/buildroot_external" >> $GITHUB_ENV
+      - name: Sanity check
+        run: |
+          echo "=== WORKSPACE ==="
+          ls -lah $WORKSPACE_ROOT
+          echo "=== BUILDROOT ==="
+          ls -lah $BUILDROOT_DIR
+          echo "=== EXTERNAL ==="
+          ls -lah $BR2_EXTERNAL
+      - name: Configure Buildroot
+        working-directory: ${{ env.BUILDROOT_DIR }}
+        run: |
+          make BR2_EXTERNAL=$BR2_EXTERNAL zynqmp_zcu106_defconfig
+      - name: Build
+        working-directory: ${{ env.BUILDROOT_DIR }}
+        run: |
+          make -j$(nproc)
+      - name: Build SDK
+        working-directory: ${{ env.BUILDROOT_DIR }}
+        run: |
+          make sdk
+      - name: Show artifacts
+        working-directory: ${{ env.BUILDROOT_DIR }}
+        run: |
+          ls -lah output/images || true
+      - name: Upload images
+        uses: actions/upload-artifact@v4
+        with:
+          name: zynqmp-zcu106-images
+          path: |
+            buildroot/output/images/sdcard.img
+            buildroot/output/images/*_sdk-*.tar.gz
+
   release:
     name: Publish GitHub Release
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build-rk7020f, build-zcu106]
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
     steps:
-      - name: Download artifacts
+      - name: Download rk7020f artifacts
         uses: actions/download-artifact@v4
         with:
           name: zynq-rk7020f-images
-          path: artifacts
+          path: artifacts/rk7020f
+      - name: Download zcu106 artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: zynqmp-zcu106-images
+          path: artifacts/zcu106
       - name: Show downloaded files
         run: find artifacts -type f | sort
       - name: Create GitHub Release
@@ -71,4 +123,4 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: "Release ${{ github.ref_name }}"
           generate_release_notes: true
-          files: artifacts/*
+          files: artifacts/**/*
