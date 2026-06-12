@@ -1,7 +1,7 @@
 name: Build Buildroot Zynq RK7020F
 on:
   push:
-    branches: ["main", "zynqmp_zcu106_rev1_0"]
+    branches: ["main", "beaglebone_support"]
     tags:
       - "v*"
   workflow_dispatch:
@@ -155,10 +155,83 @@ jobs:
             buildroot/${{ env.OUTPUT_DIR }}/images/sdcard-zcu106.img
             buildroot/${{ env.OUTPUT_DIR }}/images/*_sdk-*.tar.gz
 
+  build-beaglebone:
+    runs-on: self-hosted
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    env:
+      OUTPUT_DIR: output_beaglebone
+      DEFCONFIG: beaglebone_defconfig
+      ARTIFACT_NAME: beaglebone-images
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Prepare cache directories
+        run: |
+          mkdir -p $DL_DIR $CCACHE_DIR
+      - name: Set environment paths
+        run: |
+          echo "WORKSPACE_ROOT=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "BUILDROOT_DIR=$GITHUB_WORKSPACE/buildroot" >> $GITHUB_ENV
+          echo "BR2_EXTERNAL=$GITHUB_WORKSPACE/buildroot_external" >> $GITHUB_ENV
+      - name: Sanity check
+        run: |
+          echo "=== WORKSPACE ==="
+          ls -lah $WORKSPACE_ROOT
+          echo "=== BUILDROOT ==="
+          ls -lah $BUILDROOT_DIR
+          echo "=== EXTERNAL ==="
+          ls -lah $BR2_EXTERNAL
+          echo "=== DL CACHE ==="
+          du -sh $DL_DIR || true
+          echo "=== CCACHE STATS ==="
+          ccache --show-stats || true
+      - name: Configure Buildroot
+        working-directory: ${{ env.BUILDROOT_DIR }}
+        run: |
+          make \
+            O=${{ env.OUTPUT_DIR }} \
+            BR2_EXTERNAL=$BR2_EXTERNAL \
+            ${{ env.DEFCONFIG }}
+      - name: Apply cache config overrides
+        working-directory: ${{ env.BUILDROOT_DIR }}/${{ env.OUTPUT_DIR }}
+        run: |
+          cat >> .config <<EOF
+          BR2_DL_DIR="$DL_DIR"
+          BR2_CCACHE=y
+          BR2_CCACHE_DIR="$CCACHE_DIR"
+          EOF
+          make -C ${{ env.BUILDROOT_DIR }} O=${{ env.OUTPUT_DIR }} olddefconfig
+      - name: Build
+        working-directory: ${{ env.BUILDROOT_DIR }}
+        run: |
+          make O=${{ env.OUTPUT_DIR }} -j$(nproc)
+      - name: Build SDK
+        working-directory: ${{ env.BUILDROOT_DIR }}
+        run: |
+          make O=${{ env.OUTPUT_DIR }} sdk
+      - name: Rename sdcard image
+        run: |
+          IMG=buildroot/${{ env.OUTPUT_DIR }}/images/sdcard.img
+          if [ -f "$IMG" ]; then
+            mv "$IMG" "buildroot/${{ env.OUTPUT_DIR }}/images/sdcard-beaglebone.img"
+          fi
+      - name: Show artifacts
+        run: |
+          ls -lah ${{ env.BUILDROOT_DIR }}/${{ env.OUTPUT_DIR }}/images || true
+      - name: Upload images
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: |
+            buildroot/${{ env.OUTPUT_DIR }}/images/sdcard-beaglebone.img
+            buildroot/${{ env.OUTPUT_DIR }}/images/*_sdk-*.tar.gz
+
   release:
     name: Publish GitHub Release
     runs-on: ubuntu-latest
-    needs: [build-rk7020f, build-zcu106]
+    needs: [build-rk7020f, build-zcu106, build-beaglebone]
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
@@ -173,6 +246,11 @@ jobs:
         with:
           name: zynqmp-zcu106-images
           path: artifacts/zcu106
+      - name: Download beaglebone artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: beaglebone-images
+          path: artifacts/beaglebone
       - name: Show downloaded files
         run: find artifacts -type f | sort
       - name: Create GitHub Release
