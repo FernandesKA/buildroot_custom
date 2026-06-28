@@ -1,0 +1,12 @@
+--- a/arch/arm/dts/Makefile
++++ b/arch/arm/dts/Makefile
+@@ -251,7 +251,8 @@
+ 	zynq-zturn.dtb \
+ 	zynq-zturn-v5.dtb \
+ 	zynq-zybo.dtb \
+-	zynq-zybo-z7.dtb
++	zynq-zybo-z7.dtb \
++	zynq-adrv9002.dtb
+ dtb-$(CONFIG_ARCH_ZYNQMP) += \
+ 	avnet-ultra96-rev1.dtb			\
+ 	zynqmp-a2197-revA.dtb			\
