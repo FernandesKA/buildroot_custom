@@ -14,6 +14,7 @@
 | Sipeed M1S (ext) | `sipeed_m1s_ext_defconfig` |
 | BeagleBone | `beaglebone_defconfig` |
 | QEMU x86_64 | `qemu_x86_64_defconfig` |
+| QEMU ARM (Zynq-7000, для отладки драйверов) | `qemu_arm_defconfig` |
 
 ## Структура репозитория
 ```
