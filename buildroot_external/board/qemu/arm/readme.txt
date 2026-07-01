@@ -1,6 +1,6 @@
 Run the emulation with:
 
-  qemu-system-arm -M xilinx-zynq-a9 -smp 2 -m 1G -kernel output/images/zImage -dtb output/images/zynq-zc702.dtb -drive file=output/images/rootfs.ext2,if=sd,format=raw -append "root=/dev/mmcblk0 rw rootwait console=ttyPS0,115200 earlyprintk" -serial stdio -net nic,model=cadence_gem -net user,hostfwd=tcp::2222-:22 # qemu_arm_defconfig
+  qemu-system-arm -M xilinx-zynq-a9 -smp 1 -m 1G -kernel output/images/zImage -dtb output/images/zynq-zc702.dtb -drive file=output/images/rootfs.ext2,if=sd,format=raw -append "root=/dev/mmcblk0 rw rootwait earlycon console=ttyPS0,115200" -serial null -serial stdio -net nic,model=cadence_gem -net user,hostfwd=tcp::2222-:22 -net nic,model=cadence_gem -net user # qemu_arm_defconfig
 
 The login prompt will appear in the terminal that started Qemu.
 
