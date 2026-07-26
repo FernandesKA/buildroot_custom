@@ -7,6 +7,7 @@
 | Плата | Defconfig |
 |---|---|
 | Xilinx Zynq RK7020F | `zynq_rk7020f_defconfig` |
+| Xilinx Zynq RK7020F + AD9361 (FMCOMMS2/3) | `zynq_rk7020f_ad_defconfig` |
 | Xilinx Zynq ADRV9002 | `zynq_adrv9002_defconfig` |
 | Xilinx ZynqMP ZCU106 | `zynqmp_zcu106_defconfig` |
 | Raspberry Pi 4 | `raspberrypi4_custom_defconfig` |

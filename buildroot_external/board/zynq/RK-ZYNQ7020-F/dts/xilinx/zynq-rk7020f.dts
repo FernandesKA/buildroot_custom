@@ -23,13 +23,21 @@
 	};
 };
 
+/ {
+	cpus {
+		cpu@0 {
+			operating-points = <666666 1000000 333333 1000000>;
+		};
+	};
+};
 &gem0 {
+	bootph-all;
 	phy-mode = "rgmii-id";
 	status = "okay";
 	xlnx,ptp-enet-clock = <0x69f6bcb>;
-	local-mac-address = [02 4F A3 7C 1B E9];
 };
 &intc {
+	bootph-all;
 	num_cpus = <2>;
 	num_interrupts = <96>;
 };
@@ -48,25 +56,7 @@
 	status = "okay";
 };
 &clkc {
+	bootph-all;
 	fclk-enable = <0x1>;
 	ps-clk-frequency = <33333333>;
-};
-
-&qspi {
-	#address-cells = <1>;
-	#size-cells = <0>;
-	flash0: flash@0 {
-		partition@0 {
-			label = "qspi-boot";
-			reg = <0x00000000 0x00500000>;
-		};
-		partition@1 {
-			label = "qspi-kernel";
-			reg = <0x00500000 0x00a80000>;
-		};
-		partition@2 {
-			label = "qspi-bootenv";
-			reg = <0x00f80000 0x00020000>;
-		};
-	};
 };
