@@ -1,0 +1,12 @@
+--- ./arch/arm/dts/Makefile.orig	2026-05-19 20:57:46.451922011 +0300
++++ ./arch/arm/dts/Makefile	2026-05-19 20:52:27.910929097 +0300
+@@ -251,7 +251,8 @@
+ 	zynq-zturn.dtb \
+ 	zynq-zturn-v5.dtb \
+ 	zynq-zybo.dtb \
+-	zynq-zybo-z7.dtb
++	zynq-zybo-z7.dtb \
++	zynq-rk7020f.dtb
+ dtb-$(CONFIG_ARCH_ZYNQMP) += \
+ 	avnet-ultra96-rev1.dtb			\
+ 	zynqmp-a2197-revA.dtb			\
