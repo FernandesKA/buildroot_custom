@@ -6,7 +6,7 @@
  	zynq-zybo.dtb \
 -	zynq-zybo-z7.dtb
 +	zynq-zybo-z7.dtb \
-+	zynq-rk7020f.dtb
++	zynq-mini.dtb
  dtb-$(CONFIG_ARCH_ZYNQMP) += \
  	avnet-ultra96-rev1.dtb			\
  	zynqmp-a2197-revA.dtb			\
