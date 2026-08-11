@@ -24,7 +24,7 @@ jobs:
       - name: Prepare cache directories
         run: |
           mkdir -p $DL_DIR $CCACHE_DIR
-          ccache -M 10G
+          echo "max_size = 10G" > "$CCACHE_DIR/ccache.conf"
       - name: Set environment paths
         run: |
           echo "WORKSPACE_ROOT=$GITHUB_WORKSPACE" >> $GITHUB_ENV
@@ -102,7 +102,7 @@ jobs:
       - name: Prepare cache directories
         run: |
           mkdir -p $DL_DIR $CCACHE_DIR
-          ccache -M 10G
+          echo "max_size = 10G" > "$CCACHE_DIR/ccache.conf"
       - name: Set environment paths
         run: |
           echo "WORKSPACE_ROOT=$GITHUB_WORKSPACE" >> $GITHUB_ENV
@@ -180,7 +180,7 @@ jobs:
       - name: Prepare cache directories
         run: |
           mkdir -p $DL_DIR $CCACHE_DIR
-          ccache -M 10G
+          echo "max_size = 10G" > "$CCACHE_DIR/ccache.conf"
       - name: Set environment paths
         run: |
           echo "WORKSPACE_ROOT=$GITHUB_WORKSPACE" >> $GITHUB_ENV
@@ -258,7 +258,7 @@ jobs:
       - name: Prepare cache directories
         run: |
           mkdir -p $DL_DIR $CCACHE_DIR
-          ccache -M 10G
+          echo "max_size = 10G" > "$CCACHE_DIR/ccache.conf"
       - name: Set environment paths
         run: |
           echo "WORKSPACE_ROOT=$GITHUB_WORKSPACE" >> $GITHUB_ENV
@@ -336,7 +336,7 @@ jobs:
       - name: Prepare cache directories
         run: |
           mkdir -p $DL_DIR $CCACHE_DIR
-          ccache -M 10G
+          echo "max_size = 10G" > "$CCACHE_DIR/ccache.conf"
       - name: Set environment paths
         run: |
           echo "WORKSPACE_ROOT=$GITHUB_WORKSPACE" >> $GITHUB_ENV
@@ -414,7 +414,7 @@ jobs:
       - name: Prepare cache directories
         run: |
           mkdir -p $DL_DIR $CCACHE_DIR
-          ccache -M 10G
+          echo "max_size = 10G" > "$CCACHE_DIR/ccache.conf"
       - name: Set environment paths
         run: |
           echo "WORKSPACE_ROOT=$GITHUB_WORKSPACE" >> $GITHUB_ENV
@@ -492,7 +492,7 @@ jobs:
       - name: Prepare cache directories
         run: |
           mkdir -p $DL_DIR $CCACHE_DIR
-          ccache -M 10G
+          echo "max_size = 10G" > "$CCACHE_DIR/ccache.conf"
       - name: Set environment paths
         run: |
           echo "WORKSPACE_ROOT=$GITHUB_WORKSPACE" >> $GITHUB_ENV
