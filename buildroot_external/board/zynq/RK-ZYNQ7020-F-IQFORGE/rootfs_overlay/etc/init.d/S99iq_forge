@@ -1,0 +1,34 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          iq_forge
+# Required-Start:    $all
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:
+# Short-Description: Load FPGA bitstream + apply AD9361 overlay persisted by
+#                     iq_forge_fw scripts/load.sh --persistent
+### END INIT INFO
+
+IQ_FORGE_DIR="/opt/iq_forge/current"
+
+case "$1" in
+  start)
+    if [ ! -f "$IQ_FORGE_DIR/manifest.env" ]; then
+        echo "iq_forge: nothing deployed in $IQ_FORGE_DIR, skipping"
+        exit 0
+    fi
+
+    cd "$IQ_FORGE_DIR" || exit 0
+    ./iq_forge_app
+    ;;
+  stop)
+    ;;
+  restart|reload|force-reload)
+    ;;
+  *)
+    echo "Usage: $0 start" >&2
+    exit 3
+    ;;
+esac
+
+exit 0
