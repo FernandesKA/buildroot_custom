@@ -66,11 +66,15 @@ jobs:
         working-directory: ${{ env.BUILDROOT_DIR }}
         run: |
           make O=${{ env.OUTPUT_DIR }} sdk
-      - name: Rename sdcard image
+      - name: Rename artifacts
         run: |
           IMG=buildroot/${{ env.OUTPUT_DIR }}/images/sdcard.img
           if [ -f "$IMG" ]; then
             mv "$IMG" "buildroot/${{ env.OUTPUT_DIR }}/images/sdcard-rk7020f.img"
+          fi
+          SDK=$(ls buildroot/${{ env.OUTPUT_DIR }}/images/*_sdk-*.tar.gz 2>/dev/null | head -n1)
+          if [ -n "$SDK" ]; then
+            mv "$SDK" "${SDK%.tar.gz}-rk7020f.tar.gz"
           fi
       - name: Show artifacts
         run: |
@@ -144,11 +148,15 @@ jobs:
         working-directory: ${{ env.BUILDROOT_DIR }}
         run: |
           make O=${{ env.OUTPUT_DIR }} sdk
-      - name: Rename sdcard image
+      - name: Rename artifacts
         run: |
           IMG=buildroot/${{ env.OUTPUT_DIR }}/images/sdcard.img
           if [ -f "$IMG" ]; then
             mv "$IMG" "buildroot/${{ env.OUTPUT_DIR }}/images/sdcard-zcu106.img"
+          fi
+          SDK=$(ls buildroot/${{ env.OUTPUT_DIR }}/images/*_sdk-*.tar.gz 2>/dev/null | head -n1)
+          if [ -n "$SDK" ]; then
+            mv "$SDK" "${SDK%.tar.gz}-zcu106.tar.gz"
           fi
       - name: Show artifacts
         run: |
@@ -222,11 +230,15 @@ jobs:
         working-directory: ${{ env.BUILDROOT_DIR }}
         run: |
           make O=${{ env.OUTPUT_DIR }} sdk
-      - name: Rename sdcard image
+      - name: Rename artifacts
         run: |
           IMG=buildroot/${{ env.OUTPUT_DIR }}/images/sdcard.img
           if [ -f "$IMG" ]; then
             mv "$IMG" "buildroot/${{ env.OUTPUT_DIR }}/images/sdcard-zcu106-ram.img"
+          fi
+          SDK=$(ls buildroot/${{ env.OUTPUT_DIR }}/images/*_sdk-*.tar.gz 2>/dev/null | head -n1)
+          if [ -n "$SDK" ]; then
+            mv "$SDK" "${SDK%.tar.gz}-zcu106-ram.tar.gz"
           fi
       - name: Show artifacts
         run: |
@@ -300,11 +312,15 @@ jobs:
         working-directory: ${{ env.BUILDROOT_DIR }}
         run: |
           make O=${{ env.OUTPUT_DIR }} sdk
-      - name: Rename sdcard image
+      - name: Rename artifacts
         run: |
           IMG=buildroot/${{ env.OUTPUT_DIR }}/images/sdcard.img
           if [ -f "$IMG" ]; then
             mv "$IMG" "buildroot/${{ env.OUTPUT_DIR }}/images/sdcard-beaglebone.img"
+          fi
+          SDK=$(ls buildroot/${{ env.OUTPUT_DIR }}/images/*_sdk-*.tar.gz 2>/dev/null | head -n1)
+          if [ -n "$SDK" ]; then
+            mv "$SDK" "${SDK%.tar.gz}-beaglebone.tar.gz"
           fi
       - name: Show artifacts
         run: |
@@ -378,11 +394,15 @@ jobs:
         working-directory: ${{ env.BUILDROOT_DIR }}
         run: |
           make O=${{ env.OUTPUT_DIR }} sdk
-      - name: Rename sdcard image
+      - name: Rename artifacts
         run: |
           IMG=buildroot/${{ env.OUTPUT_DIR }}/images/sdcard.img
           if [ -f "$IMG" ]; then
             mv "$IMG" "buildroot/${{ env.OUTPUT_DIR }}/images/sdcard-rk7020f-ad.img"
+          fi
+          SDK=$(ls buildroot/${{ env.OUTPUT_DIR }}/images/*_sdk-*.tar.gz 2>/dev/null | head -n1)
+          if [ -n "$SDK" ]; then
+            mv "$SDK" "${SDK%.tar.gz}-rk7020f-ad.tar.gz"
           fi
       - name: Show artifacts
         run: |
@@ -456,11 +476,15 @@ jobs:
         working-directory: ${{ env.BUILDROOT_DIR }}
         run: |
           make O=${{ env.OUTPUT_DIR }} sdk
-      - name: Rename sdcard image
+      - name: Rename artifacts
         run: |
           IMG=buildroot/${{ env.OUTPUT_DIR }}/images/sdcard.img
           if [ -f "$IMG" ]; then
             mv "$IMG" "buildroot/${{ env.OUTPUT_DIR }}/images/sdcard-adrv9002.img"
+          fi
+          SDK=$(ls buildroot/${{ env.OUTPUT_DIR }}/images/*_sdk-*.tar.gz 2>/dev/null | head -n1)
+          if [ -n "$SDK" ]; then
+            mv "$SDK" "${SDK%.tar.gz}-adrv9002.tar.gz"
           fi
       - name: Show artifacts
         run: |
@@ -534,11 +558,15 @@ jobs:
         working-directory: ${{ env.BUILDROOT_DIR }}
         run: |
           make O=${{ env.OUTPUT_DIR }} sdk
-      - name: Rename sdcard image
+      - name: Rename artifacts
         run: |
           IMG=buildroot/${{ env.OUTPUT_DIR }}/images/sdcard.img
           if [ -f "$IMG" ]; then
             mv "$IMG" "buildroot/${{ env.OUTPUT_DIR }}/images/sdcard-raspberrypi4.img"
+          fi
+          SDK=$(ls buildroot/${{ env.OUTPUT_DIR }}/images/*_sdk-*.tar.gz 2>/dev/null | head -n1)
+          if [ -n "$SDK" ]; then
+            mv "$SDK" "${SDK%.tar.gz}-raspberrypi4.tar.gz"
           fi
       - name: Show artifacts
         run: |
@@ -555,10 +583,254 @@ jobs:
         run: |
           rm -rf ${{ env.BUILDROOT_DIR }}/${{ env.OUTPUT_DIR }}
 
+  build-qemu-x86_64:
+    runs-on: self-hosted
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    env:
+      OUTPUT_DIR: output_qemu_x86_64
+      DEFCONFIG: qemu_x86_64_defconfig
+      ARTIFACT_NAME: qemu-x86_64-images
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Prepare cache directories
+        run: |
+          mkdir -p $DL_DIR $CCACHE_DIR
+          echo "max_size = 10G" > "$CCACHE_DIR/ccache.conf"
+      - name: Set environment paths
+        run: |
+          echo "WORKSPACE_ROOT=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "BUILDROOT_DIR=$GITHUB_WORKSPACE/buildroot" >> $GITHUB_ENV
+          echo "BR2_EXTERNAL=$GITHUB_WORKSPACE/buildroot_external" >> $GITHUB_ENV
+      - name: Sanity check
+        run: |
+          echo "=== WORKSPACE ==="
+          ls -lah $WORKSPACE_ROOT
+          echo "=== BUILDROOT ==="
+          ls -lah $BUILDROOT_DIR
+          echo "=== EXTERNAL ==="
+          ls -lah $BR2_EXTERNAL
+          echo "=== DL CACHE ==="
+          du -sh $DL_DIR || true
+          echo "=== CCACHE STATS ==="
+          ccache --show-stats || true
+      - name: Configure Buildroot
+        working-directory: ${{ env.BUILDROOT_DIR }}
+        run: |
+          make \
+            O=${{ env.OUTPUT_DIR }} \
+            BR2_EXTERNAL=$BR2_EXTERNAL \
+            ${{ env.DEFCONFIG }}
+      - name: Apply cache config overrides
+        working-directory: ${{ env.BUILDROOT_DIR }}/${{ env.OUTPUT_DIR }}
+        run: |
+          cat >> .config <<EOF
+          BR2_DL_DIR="$DL_DIR"
+          BR2_CCACHE=y
+          BR2_CCACHE_DIR="$CCACHE_DIR"
+          EOF
+          make -C ${{ env.BUILDROOT_DIR }} O=${{ env.OUTPUT_DIR }} olddefconfig
+      - name: Build
+        working-directory: ${{ env.BUILDROOT_DIR }}
+        run: |
+          make O=${{ env.OUTPUT_DIR }} -j$(nproc)
+      - name: Build SDK
+        working-directory: ${{ env.BUILDROOT_DIR }}
+        run: |
+          make O=${{ env.OUTPUT_DIR }} sdk
+      - name: Rename artifacts
+        run: |
+          SDK=$(ls buildroot/${{ env.OUTPUT_DIR }}/images/*_sdk-*.tar.gz 2>/dev/null | head -n1)
+          if [ -n "$SDK" ]; then
+            mv "$SDK" "${SDK%.tar.gz}-qemu-x86_64.tar.gz"
+          fi
+      - name: Show artifacts
+        run: |
+          ls -lah ${{ env.BUILDROOT_DIR }}/${{ env.OUTPUT_DIR }}/images || true
+      - name: Upload images
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: |
+            buildroot/${{ env.OUTPUT_DIR }}/images/bzImage
+            buildroot/${{ env.OUTPUT_DIR }}/images/rootfs.ext*
+            buildroot/${{ env.OUTPUT_DIR }}/images/start-qemu.sh
+            buildroot/${{ env.OUTPUT_DIR }}/images/*_sdk-*.tar.gz
+      - name: Clean output directory
+        if: always()
+        run: |
+          rm -rf ${{ env.BUILDROOT_DIR }}/${{ env.OUTPUT_DIR }}
+
+  build-pluto-sky:
+    runs-on: self-hosted
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    env:
+      OUTPUT_DIR: output_pluto_sky
+      DEFCONFIG: zynq_pluto_sky_defconfig
+      ARTIFACT_NAME: zynq-pluto-sky-images
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Prepare cache directories
+        run: |
+          mkdir -p $DL_DIR $CCACHE_DIR
+          echo "max_size = 10G" > "$CCACHE_DIR/ccache.conf"
+      - name: Set environment paths
+        run: |
+          echo "WORKSPACE_ROOT=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "BUILDROOT_DIR=$GITHUB_WORKSPACE/buildroot" >> $GITHUB_ENV
+          echo "BR2_EXTERNAL=$GITHUB_WORKSPACE/buildroot_external" >> $GITHUB_ENV
+      - name: Sanity check
+        run: |
+          echo "=== WORKSPACE ==="
+          ls -lah $WORKSPACE_ROOT
+          echo "=== BUILDROOT ==="
+          ls -lah $BUILDROOT_DIR
+          echo "=== EXTERNAL ==="
+          ls -lah $BR2_EXTERNAL
+          echo "=== DL CACHE ==="
+          du -sh $DL_DIR || true
+          echo "=== CCACHE STATS ==="
+          ccache --show-stats || true
+      - name: Configure Buildroot
+        working-directory: ${{ env.BUILDROOT_DIR }}
+        run: |
+          make \
+            O=${{ env.OUTPUT_DIR }} \
+            BR2_EXTERNAL=$BR2_EXTERNAL \
+            ${{ env.DEFCONFIG }}
+      - name: Apply cache config overrides
+        working-directory: ${{ env.BUILDROOT_DIR }}/${{ env.OUTPUT_DIR }}
+        run: |
+          cat >> .config <<EOF
+          BR2_DL_DIR="$DL_DIR"
+          BR2_CCACHE=y
+          BR2_CCACHE_DIR="$CCACHE_DIR"
+          EOF
+          make -C ${{ env.BUILDROOT_DIR }} O=${{ env.OUTPUT_DIR }} olddefconfig
+      - name: Build
+        working-directory: ${{ env.BUILDROOT_DIR }}
+        run: |
+          make O=${{ env.OUTPUT_DIR }} -j$(nproc)
+      - name: Build SDK
+        working-directory: ${{ env.BUILDROOT_DIR }}
+        run: |
+          make O=${{ env.OUTPUT_DIR }} sdk
+      - name: Rename artifacts
+        run: |
+          IMG=buildroot/${{ env.OUTPUT_DIR }}/images/sdcard.img
+          if [ -f "$IMG" ]; then
+            mv "$IMG" "buildroot/${{ env.OUTPUT_DIR }}/images/sdcard-pluto-sky.img"
+          fi
+          SDK=$(ls buildroot/${{ env.OUTPUT_DIR }}/images/*_sdk-*.tar.gz 2>/dev/null | head -n1)
+          if [ -n "$SDK" ]; then
+            mv "$SDK" "${SDK%.tar.gz}-pluto-sky.tar.gz"
+          fi
+      - name: Show artifacts
+        run: |
+          ls -lah ${{ env.BUILDROOT_DIR }}/${{ env.OUTPUT_DIR }}/images || true
+      - name: Upload images
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: |
+            buildroot/${{ env.OUTPUT_DIR }}/images/sdcard-pluto-sky.img
+            buildroot/${{ env.OUTPUT_DIR }}/images/*_sdk-*.tar.gz
+      - name: Clean output directory
+        if: always()
+        run: |
+          rm -rf ${{ env.BUILDROOT_DIR }}/${{ env.OUTPUT_DIR }}
+
+  build-rk7020f-iqforge:
+    runs-on: self-hosted
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    env:
+      OUTPUT_DIR: output_rk7020f_iqforge
+      DEFCONFIG: zynq_rk7020f_iqforge_defconfig
+      ARTIFACT_NAME: zynq-rk7020f-iqforge-images
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Prepare cache directories
+        run: |
+          mkdir -p $DL_DIR $CCACHE_DIR
+          echo "max_size = 10G" > "$CCACHE_DIR/ccache.conf"
+      - name: Set environment paths
+        run: |
+          echo "WORKSPACE_ROOT=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "BUILDROOT_DIR=$GITHUB_WORKSPACE/buildroot" >> $GITHUB_ENV
+          echo "BR2_EXTERNAL=$GITHUB_WORKSPACE/buildroot_external" >> $GITHUB_ENV
+      - name: Sanity check
+        run: |
+          echo "=== WORKSPACE ==="
+          ls -lah $WORKSPACE_ROOT
+          echo "=== BUILDROOT ==="
+          ls -lah $BUILDROOT_DIR
+          echo "=== EXTERNAL ==="
+          ls -lah $BR2_EXTERNAL
+          echo "=== DL CACHE ==="
+          du -sh $DL_DIR || true
+          echo "=== CCACHE STATS ==="
+          ccache --show-stats || true
+      - name: Configure Buildroot
+        working-directory: ${{ env.BUILDROOT_DIR }}
+        run: |
+          make \
+            O=${{ env.OUTPUT_DIR }} \
+            BR2_EXTERNAL=$BR2_EXTERNAL \
+            ${{ env.DEFCONFIG }}
+      - name: Apply cache config overrides
+        working-directory: ${{ env.BUILDROOT_DIR }}/${{ env.OUTPUT_DIR }}
+        run: |
+          cat >> .config <<EOF
+          BR2_DL_DIR="$DL_DIR"
+          BR2_CCACHE=y
+          BR2_CCACHE_DIR="$CCACHE_DIR"
+          EOF
+          make -C ${{ env.BUILDROOT_DIR }} O=${{ env.OUTPUT_DIR }} olddefconfig
+      - name: Build
+        working-directory: ${{ env.BUILDROOT_DIR }}
+        run: |
+          make O=${{ env.OUTPUT_DIR }} -j$(nproc)
+      - name: Build SDK
+        working-directory: ${{ env.BUILDROOT_DIR }}
+        run: |
+          make O=${{ env.OUTPUT_DIR }} sdk
+      - name: Rename artifacts
+        run: |
+          IMG=buildroot/${{ env.OUTPUT_DIR }}/images/sdcard.img
+          if [ -f "$IMG" ]; then
+            mv "$IMG" "buildroot/${{ env.OUTPUT_DIR }}/images/sdcard-rk7020f-iqforge.img"
+          fi
+          SDK=$(ls buildroot/${{ env.OUTPUT_DIR }}/images/*_sdk-*.tar.gz 2>/dev/null | head -n1)
+          if [ -n "$SDK" ]; then
+            mv "$SDK" "${SDK%.tar.gz}-rk7020f-iqforge.tar.gz"
+          fi
+      - name: Show artifacts
+        run: |
+          ls -lah ${{ env.BUILDROOT_DIR }}/${{ env.OUTPUT_DIR }}/images || true
+      - name: Upload images
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: |
+            buildroot/${{ env.OUTPUT_DIR }}/images/sdcard-rk7020f-iqforge.img
+            buildroot/${{ env.OUTPUT_DIR }}/images/*_sdk-*.tar.gz
+      - name: Clean output directory
+        if: always()
+        run: |
+          rm -rf ${{ env.BUILDROOT_DIR }}/${{ env.OUTPUT_DIR }}
+
   release:
     name: Publish GitHub Release
     runs-on: ubuntu-latest
-    needs: [build-rk7020f, build-zcu106, build-zcu106-ram, build-beaglebone, build-rk7020f-ad, build-adrv9002, build-raspberrypi4]
+    needs: [build-rk7020f, build-zcu106, build-zcu106-ram, build-beaglebone, build-rk7020f-ad, build-adrv9002, build-raspberrypi4, build-qemu-x86_64, build-pluto-sky, build-rk7020f-iqforge]
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
@@ -598,6 +870,21 @@ jobs:
         with:
           name: raspberrypi4-custom-images
           path: artifacts/raspberrypi4
+      - name: Download qemu-x86_64 artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: qemu-x86_64-images
+          path: artifacts/qemu-x86_64
+      - name: Download pluto-sky artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: zynq-pluto-sky-images
+          path: artifacts/pluto-sky
+      - name: Download rk7020f-iqforge artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: zynq-rk7020f-iqforge-images
+          path: artifacts/rk7020f-iqforge
       - name: Show downloaded files
         run: find artifacts -type f | sort
       - name: Create GitHub Release
