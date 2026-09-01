@@ -54,7 +54,7 @@ cd buildroot_custom
 ```bash
 export BR2_EXTERNAL_FKA_PATH=$(pwd)/buildroot_external
 cd buildroot
-make BR2_EXTERNAL=$BR2_EXTERNAL_FKA_PATH <config_name>
+make BR2_EXTERNAL=$BR2_EXTERNAL <config_name>
 make
 ```
 
