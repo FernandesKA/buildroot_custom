@@ -5,7 +5,7 @@
 ################################################################################
 
 RISCV_UNKNOWN_ELF_GCC_VERSION = c4afe91
-RISCV_UNKNOWN_ELF_GCC_SITE = https://gitee.com/bouffalolab/toolchain_gcc_t-head_linux.git
+RISCV_UNKNOWN_ELF_GCC_SITE = https://github.com/bouffalolab/toolchain_gcc_t-head_linux.git
 RISCV_UNKNOWN_ELF_GCC_SITE_METHOD = git
 
 
