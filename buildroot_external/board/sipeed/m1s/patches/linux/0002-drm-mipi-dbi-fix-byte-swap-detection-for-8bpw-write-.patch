@@ -1,0 +1,31 @@
+From ccc7d7179ca07eae36383e8678d53dfaa247bb51 Mon Sep 17 00:00:00 2001
+From: a <a@a>
+Date: Sat, 5 Sep 2026 23:12:18 +0300
+Subject: [PATCH 2/2] drm/mipi-dbi: fix byte swap detection for 8bpw write-only
+ SPI panels
+
+mipi_dbi_spi_init() only forced byte-swapping when the SPI controller
+doesn't support a 16 bpw transfer. Write-only DBI type C3 panels (as
+used by the Sipeed M1s Dock display) run the bus at 8 bpw, so also
+swap bytes in that case on little-endian machines.
+---
+ drivers/gpu/drm/drm_mipi_dbi.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/drm_mipi_dbi.c b/drivers/gpu/drm/drm_mipi_dbi.c
+index c871d9f09..00548aef2 100644
+--- a/drivers/gpu/drm/drm_mipi_dbi.c
++++ b/drivers/gpu/drm/drm_mipi_dbi.c
+@@ -1244,7 +1244,8 @@ int mipi_dbi_spi_init(struct spi_device *spi, struct mipi_dbi *dbi,
+ 	if (dc) {
+ 		dbi->command = mipi_dbi_typec3_command;
+ 		dbi->dc = dc;
+-		if (mipi_dbi_machine_little_endian() && !spi_is_bpw_supported(spi, 16))
++		if ((spi->bits_per_word == 8 && mipi_dbi_machine_little_endian()) ||
++			(mipi_dbi_machine_little_endian() && !spi_is_bpw_supported(spi, 16)))
+ 			dbi->swap_bytes = true;
+ 	} else {
+ 		dbi->command = mipi_dbi_typec1_command;
+-- 
+2.43.0
+
