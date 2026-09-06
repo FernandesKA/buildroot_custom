@@ -1,0 +1,83 @@
+From f3e6e24dd89f27348c960256fd4cbc9fb4af8c69 Mon Sep 17 00:00:00 2001
+From: FernandesKA <fernandezka.2601@gmail.com>
+Date: Sun, 6 Sep 2026 18:16:00 +0300
+Subject: [PATCH] mtd: bl808-sflash: reject bogus flash_cfg from M0 shared
+ memory
+
+flash_cfg is copied verbatim from a fixed shared-memory region
+(0x40001000) that the M0 core's flash-detect firmware populates
+before D0/Linux boots. If that firmware hasn't run yet (or produced
+garbage), the *_reg_len fields end up being used directly as
+memcpy_fromio() lengths into fixed 4-byte stack buffers in
+bflb_sflash_read_reg()/bflb_sflash_write_reg() callers such as
+bflb_sflash_write_enable(), overflowing the stack and tripping
+CONFIG_STACKPROTECTOR:
+
+  Kernel panic - not syncing: stack-protector: Kernel stack is corrupted
+
+Validate flash_cfg before using it and fail probe cleanly with
+-EINVAL instead of crashing.
+
+Signed-off-by: FernandesKA <fernandezka.2601@gmail.com>
+---
+ drivers/mtd/devices/bl808_sflash.c | 37 ++++++++++++++++++++++++++++++
+ 1 file changed, 37 insertions(+)
+
+diff --git a/drivers/mtd/devices/bl808_sflash.c b/drivers/mtd/devices/bl808_sflash.c
+index a48f342..993dce6 100644
+--- a/drivers/mtd/devices/bl808_sflash.c
++++ b/drivers/mtd/devices/bl808_sflash.c
+@@ -747,6 +747,37 @@ static int bl_sflash_mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 	return ret;
+ }
+ 
++static int bl_sflash_cfg_is_sane(struct bl_sflash *sf)
++{
++	spi_flash_cfg_type *cfg = &sf->flash_cfg;
++
++	/*
++	 * flash_cfg is handed to us by the M0 core's flash-detect firmware
++	 * via shared memory, not read by Linux itself. If that firmware
++	 * never ran (or hasn't finished yet), the shared region is garbage
++	 * and these *_reg_len fields get used directly as memcpy_fromio()
++	 * lengths into fixed 4-byte stack buffers in bflb_sflash_read_reg()
++	 * / bflb_sflash_write_reg() callers, smashing the stack.
++	 */
++	if (cfg->wr_enable_write_reg_len > 4 || cfg->wr_enable_read_reg_len > 4 ||
++	    cfg->qe_write_reg_len > 4 || cfg->qe_read_reg_len > 4 ||
++	    cfg->busy_read_reg_len > 4)
++		return 0;
++
++	if (cfg->wr_enable_index >= ARRAY_SIZE(cfg->read_reg_cmd) ||
++	    cfg->qe_index >= ARRAY_SIZE(cfg->read_reg_cmd) ||
++	    cfg->busy_index >= ARRAY_SIZE(cfg->read_reg_cmd) ||
++	    cfg->wr_enable_index >= ARRAY_SIZE(cfg->write_reg_cmd) ||
++	    cfg->qe_index >= ARRAY_SIZE(cfg->write_reg_cmd) ||
++	    cfg->busy_index >= ARRAY_SIZE(cfg->write_reg_cmd))
++		return 0;
++
++	if (cfg->page_size == 0 || cfg->sector_size == 0)
++		return 0;
++
++	return 1;
++}
++
+ static int bl_sflash_init(struct bl_sflash *sf, struct xram_flash_cfg __iomem *cfg)
+ {
+ 	memcpy_fromio(&sf->flash_cfg, &cfg->flash_cfg, sizeof(sf->flash_cfg));
+@@ -755,6 +786,12 @@ static int bl_sflash_init(struct bl_sflash *sf, struct xram_flash_cfg __iomem *c
+ 	print_hex_dump(KERN_DEBUG, "flash_cfg: ", DUMP_PREFIX_OFFSET, 16, 1, p_flash_cfg, sizeof(*p_flash_cfg), false);
+ 	printk(KERN_DEBUG "flash_cfg: size %u", cfg->flash_size);
+ 
++	if (!bl_sflash_cfg_is_sane(sf)) {
++		pr_err("bl808-sflash: flash_cfg from M0 shared memory looks invalid (M0 firmware not run yet?), aborting probe\n");
++		p_flash_cfg = NULL;
++		return -EINVAL;
++	}
++
+ 	bflb_sf_ctrl_set_owner(SF_CTRL_OWNER_SAHB);
+ 	/* Exit form continous read for accepting command */
+ 	bflb_sflash_reset_continue_read(p_flash_cfg);
+-- 
+2.43.0
+

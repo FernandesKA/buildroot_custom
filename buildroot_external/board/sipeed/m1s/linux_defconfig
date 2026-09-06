@@ -96,6 +96,11 @@ CONFIG_SPI=y
 CONFIG_SPI_BFLB=y
 CONFIG_DRM=y
 CONFIG_DRM_PANEL_MIPI_DBI=y
+# DRM_PANEL_MIPI_DBI/SPI_BFLB are built-in and probe before rootfs is
+# mounted, so request_firmware() can't reach /lib/firmware on disk yet.
+# Embed the blob into vmlinux instead (see external.mk post-patch hook).
+CONFIG_EXTRA_FIRMWARE="polcd-p169h002-ctp.bin"
+CONFIG_EXTRA_FIRMWARE_DIR="firmware"
 CONFIG_FB=y
 CONFIG_BACKLIGHT_CLASS_DEVICE=y
 CONFIG_BACKLIGHT_GPIO=y

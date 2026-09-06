@@ -275,7 +275,7 @@
 		};
 
 		sdhci0: sdhci@20060000 {
-			compatible = "bouffalolab,bflb-sdhci";
+			compatible = "bflb,bl808-sdhci";
 			reg = <0x20060000 0x100>;
 			interrupts-extended = <&m0ic 17>;
 			clocks = <&sdh>;
