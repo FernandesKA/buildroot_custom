@@ -8,7 +8,7 @@ $BR2_EXTERNAL_FKA_PATH/board/sipeed/m1s/mergebin.py -o bl808-firmware.bin -k u-b
 echo "Copying Boot Script"
 $BINARIES_DIR/../host/bin/mkimage -C none -A riscv -T script -d $BR2_EXTERNAL_FKA_PATH/board/sipeed/m1s/boot-m1s.cmd $BINARIES_DIR/boot-m1s.scr
 $BINARIES_DIR/../host/bin/mkimage -C none -A riscv -T script -d $BR2_EXTERNAL_FKA_PATH/board/sipeed/m1s/boot-pine64.cmd $BINARIES_DIR/boot-pine64.scr
-cp $BINARIES_DIR/boot-pine64.scr $BINARIES_DIR/boot.scr
+cp $BINARIES_DIR/boot-m1s.scr $BINARIES_DIR/boot.scr
 cp $BINARIES_DIR/*.scr $TARGET_DIR/boot/
 cp $BR2_EXTERNAL_FKA_PATH/board/sipeed/m1s/*.cmd $TARGET_DIR/boot/
 mkdir -p $BINARIES_DIR/extlinux/

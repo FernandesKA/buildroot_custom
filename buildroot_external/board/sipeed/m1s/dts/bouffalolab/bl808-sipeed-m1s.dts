@@ -116,6 +116,11 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&i2c_2_pins>;
 	clock-frequency = <100000>; /* 100kHz */
+
+	co2_sensor: co2-sensor@62 {
+		compatible = "sensirion,scd41";
+		reg = <0x62>;
+	};
 };
 
 &mm_uart {
