@@ -9,9 +9,81 @@ env:
   DL_DIR: /opt/buildroot-cache/dl
   CCACHE_DIR: /opt/buildroot-cache/ccache
 jobs:
+  changes:
+    name: Detect changed platforms
+    runs-on: ubuntu-latest
+    outputs:
+      common: ${{ steps.filter.outputs.common }}
+      rk7020f: ${{ steps.filter.outputs.rk7020f }}
+      zcu106: ${{ steps.filter.outputs.zcu106 }}
+      zcu106_ram: ${{ steps.filter.outputs.zcu106_ram }}
+      beaglebone: ${{ steps.filter.outputs.beaglebone }}
+      rk7020f_ad: ${{ steps.filter.outputs.rk7020f_ad }}
+      adrv9002: ${{ steps.filter.outputs.adrv9002 }}
+      raspberrypi4: ${{ steps.filter.outputs.raspberrypi4 }}
+      qemu_x86_64: ${{ steps.filter.outputs.qemu_x86_64 }}
+      pluto_sky: ${{ steps.filter.outputs.pluto_sky }}
+      rk7020f_iqforge: ${{ steps.filter.outputs.rk7020f_iqforge }}
+      sipeed_m1s: ${{ steps.filter.outputs.sipeed_m1s }}
+      sipeed_m1s_ext: ${{ steps.filter.outputs.sipeed_m1s_ext }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            common:
+              - '.github/workflows/buildroot.yml'
+              - 'buildroot'
+              - 'buildroot_external/Config.in'
+              - 'buildroot_external/external.mk'
+              - 'buildroot_external/package/**'
+              - 'buildroot_external/boot/**'
+            rk7020f:
+              - 'buildroot_external/configs/zynq_rk7020f_defconfig'
+              - 'buildroot_external/board/zynq/RK-ZYNQ7020-F/**'
+            zcu106:
+              - 'buildroot_external/configs/zynqmp_zcu106_defconfig'
+              - 'buildroot_external/board/zynqmp/zcu106_custom/**'
+            zcu106_ram:
+              - 'buildroot_external/configs/zynqmp_zcu106_ram_defconfig'
+              - 'buildroot_external/board/zynqmp/zcu106_custom/**'
+            beaglebone:
+              - 'buildroot_external/configs/beaglebone_defconfig'
+              - 'buildroot_external/board/beagleboard/beaglebone/**'
+            rk7020f_ad:
+              - 'buildroot_external/configs/zynq_rk7020f_ad_defconfig'
+              - 'buildroot_external/board/zynq/RK-ZYNQ7020-F-AD/**'
+            adrv9002:
+              - 'buildroot_external/configs/zynq_adrv9002_defconfig'
+              - 'buildroot_external/board/zynq/adrv9002/**'
+            raspberrypi4:
+              - 'buildroot_external/configs/raspberrypi4_custom_defconfig'
+              - 'buildroot_external/board/raspberrypi4_custom/**'
+            qemu_x86_64:
+              - 'buildroot_external/configs/qemu_x86_64_defconfig'
+              - 'buildroot_external/board/qemu/**'
+            pluto_sky:
+              - 'buildroot_external/configs/zynq_pluto_sky_defconfig'
+              - 'buildroot_external/board/zynq/pluto_sky/**'
+            rk7020f_iqforge:
+              - 'buildroot_external/configs/zynq_rk7020f_iqforge_defconfig'
+              - 'buildroot_external/board/zynq/RK-ZYNQ7020-F-IQFORGE/**'
+            sipeed_m1s:
+              - 'buildroot_external/configs/sipeed_m1s_defconfig'
+              - 'buildroot_external/board/sipeed/m1s/**'
+            sipeed_m1s_ext:
+              - 'buildroot_external/configs/sipeed_m1s_ext_defconfig'
+              - 'buildroot_external/board/sipeed/m1s/**'
+
   build-rk7020f:
+    needs: changes
     runs-on: self-hosted
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.ref, 'refs/tags/v') ||
+      needs.changes.outputs.common == 'true' ||
+      needs.changes.outputs.rk7020f == 'true'
     env:
       OUTPUT_DIR: output_rk7020f
       DEFCONFIG: zynq_rk7020f_defconfig
@@ -92,8 +164,13 @@ jobs:
           rm -rf ${{ env.BUILDROOT_DIR }}/${{ env.OUTPUT_DIR }}
 
   build-zcu106:
+    needs: changes
     runs-on: self-hosted
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.ref, 'refs/tags/v') ||
+      needs.changes.outputs.common == 'true' ||
+      needs.changes.outputs.zcu106 == 'true'
     env:
       OUTPUT_DIR: output_zcu106
       DEFCONFIG: zynqmp_zcu106_defconfig
@@ -174,8 +251,13 @@ jobs:
           rm -rf ${{ env.BUILDROOT_DIR }}/${{ env.OUTPUT_DIR }}
 
   build-zcu106-ram:
+    needs: changes
     runs-on: self-hosted
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.ref, 'refs/tags/v') ||
+      needs.changes.outputs.common == 'true' ||
+      needs.changes.outputs.zcu106_ram == 'true'
     env:
       OUTPUT_DIR: output_zcu106_ram
       DEFCONFIG: zynqmp_zcu106_ram_defconfig
@@ -256,8 +338,13 @@ jobs:
           rm -rf ${{ env.BUILDROOT_DIR }}/${{ env.OUTPUT_DIR }}
 
   build-beaglebone:
+    needs: changes
     runs-on: self-hosted
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.ref, 'refs/tags/v') ||
+      needs.changes.outputs.common == 'true' ||
+      needs.changes.outputs.beaglebone == 'true'
     env:
       OUTPUT_DIR: output_beaglebone
       DEFCONFIG: beaglebone_defconfig
@@ -338,8 +425,13 @@ jobs:
           rm -rf ${{ env.BUILDROOT_DIR }}/${{ env.OUTPUT_DIR }}
 
   build-rk7020f-ad:
+    needs: changes
     runs-on: self-hosted
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.ref, 'refs/tags/v') ||
+      needs.changes.outputs.common == 'true' ||
+      needs.changes.outputs.rk7020f_ad == 'true'
     env:
       OUTPUT_DIR: output_rk7020f_ad
       DEFCONFIG: zynq_rk7020f_ad_defconfig
@@ -420,8 +512,13 @@ jobs:
           rm -rf ${{ env.BUILDROOT_DIR }}/${{ env.OUTPUT_DIR }}
 
   build-adrv9002:
+    needs: changes
     runs-on: self-hosted
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.ref, 'refs/tags/v') ||
+      needs.changes.outputs.common == 'true' ||
+      needs.changes.outputs.adrv9002 == 'true'
     env:
       OUTPUT_DIR: output_adrv9002
       DEFCONFIG: zynq_adrv9002_defconfig
@@ -502,8 +599,13 @@ jobs:
           rm -rf ${{ env.BUILDROOT_DIR }}/${{ env.OUTPUT_DIR }}
 
   build-raspberrypi4:
+    needs: changes
     runs-on: self-hosted
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.ref, 'refs/tags/v') ||
+      needs.changes.outputs.common == 'true' ||
+      needs.changes.outputs.raspberrypi4 == 'true'
     env:
       OUTPUT_DIR: output_raspberrypi4
       DEFCONFIG: raspberrypi4_custom_defconfig
@@ -584,8 +686,13 @@ jobs:
           rm -rf ${{ env.BUILDROOT_DIR }}/${{ env.OUTPUT_DIR }}
 
   build-qemu-x86_64:
+    needs: changes
     runs-on: self-hosted
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.ref, 'refs/tags/v') ||
+      needs.changes.outputs.common == 'true' ||
+      needs.changes.outputs.qemu_x86_64 == 'true'
     env:
       OUTPUT_DIR: output_qemu_x86_64
       DEFCONFIG: qemu_x86_64_defconfig
@@ -664,8 +771,13 @@ jobs:
           rm -rf ${{ env.BUILDROOT_DIR }}/${{ env.OUTPUT_DIR }}
 
   build-pluto-sky:
+    needs: changes
     runs-on: self-hosted
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.ref, 'refs/tags/v') ||
+      needs.changes.outputs.common == 'true' ||
+      needs.changes.outputs.pluto_sky == 'true'
     env:
       OUTPUT_DIR: output_pluto_sky
       DEFCONFIG: zynq_pluto_sky_defconfig
@@ -746,8 +858,13 @@ jobs:
           rm -rf ${{ env.BUILDROOT_DIR }}/${{ env.OUTPUT_DIR }}
 
   build-rk7020f-iqforge:
+    needs: changes
     runs-on: self-hosted
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.ref, 'refs/tags/v') ||
+      needs.changes.outputs.common == 'true' ||
+      needs.changes.outputs.rk7020f_iqforge == 'true'
     env:
       OUTPUT_DIR: output_rk7020f_iqforge
       DEFCONFIG: zynq_rk7020f_iqforge_defconfig
@@ -828,8 +945,13 @@ jobs:
           rm -rf ${{ env.BUILDROOT_DIR }}/${{ env.OUTPUT_DIR }}
 
   build-sipeed-m1s:
+    needs: changes
     runs-on: self-hosted
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.ref, 'refs/tags/v') ||
+      needs.changes.outputs.common == 'true' ||
+      needs.changes.outputs.sipeed_m1s == 'true'
     env:
       OUTPUT_DIR: output_sipeed_m1s
       DEFCONFIG: sipeed_m1s_defconfig
@@ -913,8 +1035,13 @@ jobs:
           rm -rf ${{ env.BUILDROOT_DIR }}/${{ env.OUTPUT_DIR }}
 
   build-sipeed-m1s-ext:
+    needs: changes
     runs-on: self-hosted
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.ref, 'refs/tags/v') ||
+      needs.changes.outputs.common == 'true' ||
+      needs.changes.outputs.sipeed_m1s_ext == 'true'
     env:
       OUTPUT_DIR: output_sipeed_m1s_ext
       DEFCONFIG: sipeed_m1s_ext_defconfig
