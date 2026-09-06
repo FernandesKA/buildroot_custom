@@ -1,0 +1,13 @@
+config BR2_PACKAGE_AEROLITH
+	bool "aerolith"
+	select BR2_PACKAGE_PYTHON3
+	depends on BR2_LINUX_KERNEL
+	help
+	  Reads a Sensirion SCD41 (CO2/temperature/humidity) over the
+	  kernel's scd4x IIO sysfs interface and renders the readings on
+	  the Sipeed M1s's onboard MIPI-DBI display (/dev/fb0). Pure
+	  Python 3 stdlib, no extra libraries needed.
+
+	  Installs an /etc/init.d/S99aerolith script to start it at boot.
+
+	  https://github.com/FernandesKA/aerolith
