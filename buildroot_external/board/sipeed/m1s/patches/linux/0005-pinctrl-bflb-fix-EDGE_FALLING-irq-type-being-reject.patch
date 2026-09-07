@@ -1,0 +1,59 @@
+From 8a2f7c1b3e5d0c964a2b17e6f4c8d1a09e3b5f7c Mon Sep 17 00:00:00 2001
+From: FernandesKA <fernandezka.2601@gmail.com>
+Date: Mon, 7 Sep 2026 22:15:00 +0300
+Subject: [PATCH] pinctrl: bflb: fix EDGE_FALLING irq type being rejected
+
+bflb_gpio_irq_type() maps IRQ_TYPE_EDGE_FALLING to the hardware
+register value BFLB_IRQ_MODE_SYNC_EDGE_FALLING, which is defined as
+0. bflb_gpio_irq_set_type() then rejects the result with -EINVAL
+whenever the converted value is 0:
+
+	unsigned int irqtype = bflb_gpio_irq_type(type);
+
+	if (irqtype == 0)
+		return -EINVAL;
+
+This conflates "unrecognized IRQ_TYPE_*" (which also maps to 0 via
+the switch statement's default case) with "recognized as
+EDGE_FALLING, whose hardware encoding happens to be 0", so
+IRQ_TYPE_EDGE_FALLING can never be configured on this GPIO
+interrupt controller -- confirmed on real Sipeed M1s Dock hardware
+requesting a GPIO32 EDGE_FALLING irq for a touchscreen controller:
+
+	genirq: Setting trigger mode 2 for irq 32 failed
+		(bflb_gpio_irq_set_type+0x0/0xbe)
+	cst816x 0-0015: error -EINVAL: irq request failed
+	cst816x: probe of 0-0015 failed with error -22
+
+Fix by validating the requested type directly against the set of
+types the switch statement in bflb_gpio_irq_type() actually
+recognizes, instead of inferring validity from the converted
+hardware value.
+---
+ drivers/pinctrl/pinctrl-bflb.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/pinctrl/pinctrl-bflb.c b/drivers/pinctrl/pinctrl-bflb.c
+index 1a2b3c4..5d6e7f8 100644
+--- a/drivers/pinctrl/pinctrl-bflb.c
++++ b/drivers/pinctrl/pinctrl-bflb.c
+@@ -721,8 +721,16 @@ static int bflb_gpio_irq_set_type(struct irq_data *data, unsigned int type)
+ 	irq_hw_number_t irq = irqd_to_hwirq(data);
+ 	unsigned int irqtype = bflb_gpio_irq_type(type);
+
+-	if (irqtype == 0)
++	switch (type & IRQ_TYPE_SENSE_MASK) {
++	case IRQ_TYPE_EDGE_RISING:
++	case IRQ_TYPE_EDGE_FALLING:
++	case IRQ_TYPE_EDGE_BOTH:
++	case IRQ_TYPE_LEVEL_HIGH:
++	case IRQ_TYPE_LEVEL_LOW:
++		break;
++	default:
+ 		return -EINVAL;
++	}
+
+ 	bpctl = gpiochip_get_data(irq_data_get_irq_chip_data(data));
+ 	regmap_update_bits(bpctl->map, REG_PIN(irq), REG_PIN_INT_MODE_SET,
+--
+2.43.0
