@@ -1,0 +1,71 @@
+config BR2_PACKAGE_HOST_ZYNQ_DTGEN
+	bool "zynq-dtgen (generate Zynq/ZynqMP DTS from a Xilinx .xsa)"
+	help
+	  Generates a Zynq/ZynqMP root device tree (PS side) and a
+	  separate PL devicetree overlay straight from a Vivado .xsa
+	  hardware export, using Xilinx's xsct tool and the
+	  device-tree-xlnx generator (github.com/Xilinx/device-tree-xlnx).
+
+	  Output lands in $(BUILD_DIR)/zynq-dtgen/output/xilinx/ as:
+	    <dts name>.dts                 root/PS devicetree
+	    zynq-7000.dtsi / pcw.dtsi      (or zynqmp.dtsi) included by it
+	    <dts name>-pl.dtso             PL fabric, as an overlay
+
+	  Point BR2_LINUX_KERNEL_CUSTOM_DTS_DIR / BR2_TARGET_UBOOT_CUSTOM_DTS_PATH
+	  at that output directory to actually use it.
+
+	  If xsct can't be found, the .xsa is missing, or generation fails
+	  for any other reason, the directory in
+	  BR2_PACKAGE_HOST_ZYNQ_DTGEN_FALLBACK_DIR is copied in its place
+	  instead, so the build never fails for lack of Xilinx tools -
+	  a SOURCE.txt marker is dropped in the output dir either way,
+	  saying whether it was generated or copied from the fallback.
+
+if BR2_PACKAGE_HOST_ZYNQ_DTGEN
+
+config BR2_PACKAGE_HOST_ZYNQ_DTGEN_DTS_NAME
+	string "Output DTS base name"
+	help
+	  Base name (no extension) of the generated root DTS and PL
+	  overlay, e.g. "zynq-rk7020f-ad" produces zynq-rk7020f-ad.dts
+	  and zynq-rk7020f-ad-pl.dtso.
+
+config BR2_PACKAGE_HOST_ZYNQ_DTGEN_XSA_PATH
+	string "Path to .xsa hardware export"
+	help
+	  Absolute path to the Vivado-exported .xsa (e.g. system_top.xsa)
+	  describing this board's PS configuration and PL IP.
+
+	  Left empty, or pointing at a file that doesn't exist, triggers
+	  the fallback below instead of failing the build.
+
+config BR2_PACKAGE_HOST_ZYNQ_DTGEN_XSCT
+	string "xsct binary"
+	default "xsct"
+	help
+	  Path to (or name in PATH of) Xilinx's xsct tool, part of a
+	  Vitis/Vivado install. Not found also triggers the fallback.
+
+config BR2_PACKAGE_HOST_ZYNQ_DTGEN_FALLBACK_DIR
+	string "Fallback dts directory"
+	help
+	  Directory with an already-committed root dts/dtsi for this
+	  board (same layout as an arch/.../boot/dts/xilinx dts dir).
+	  Copied verbatim into the generator's output whenever xsct/.xsa
+	  based generation cannot run - this is what keeps the build
+	  working on machines without Xilinx tools installed.
+
+	  Also where an optional "<dts name>-fixup.dtsi" is looked up:
+	  when present, it's #include-d at the end of the generated root
+	  dts (and copied alongside it) so board-specific manual fixes
+	  survive re-generation.
+
+config BR2_PACKAGE_HOST_ZYNQ_DTGEN_DEVICE_TREE_XLNX_VERSION
+	string "device-tree-xlnx git branch/tag"
+	default "xilinx_v2025.1"
+	help
+	  git branch/tag of https://github.com/Xilinx/device-tree-xlnx to
+	  check out; should match the Vivado/Vitis version that produced
+	  the .xsa.
+
+endif

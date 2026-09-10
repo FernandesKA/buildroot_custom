@@ -1,2 +1,3 @@
 source "$BR2_EXTERNAL_FKA_PATH/package/blmcusdk/Config.in.host"
 source "$BR2_EXTERNAL_FKA_PATH/package/riscv-unknown-elf-gcc/Config.in.host"
+source "$BR2_EXTERNAL_FKA_PATH/package/zynq-dtgen/Config.in.host"
