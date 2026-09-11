@@ -13,6 +13,16 @@ XSCT="$1"; XSA="$2"; DTREPO="$3"; NAME="$4"; FALLBACK="$5"; OUT="$6"
 rm -rf "$OUT"
 mkdir -p "$OUT/xilinx"
 
+# Some boards list pcw.dtsi unconditionally in BR2_TARGET_UBOOT_CUSTOM_DTS_PATH
+# because a real xsct-generated zynq-7000.dtsi may #include it, but nothing
+# in the committed (fallback) dts does. Guarantee it always exists - empty is
+# fine when unused - so that same defconfig line works whether this run
+# generated from a real .xsa or fell back to the committed dts.
+ensure_companion_files() {
+	[ -f "$OUT/xilinx/pcw.dtsi" ] || : > "$OUT/xilinx/pcw.dtsi"
+}
+trap ensure_companion_files EXIT
+
 use_fallback() {
 	reason="$1"
 	echo "zynq-dtgen: WARNING: $reason" >&2
@@ -50,7 +60,7 @@ if ! command -v "$XSCT" >/dev/null 2>&1 && [ ! -x "$XSCT" ]; then
 fi
 
 WORK=$(mktemp -d)
-trap 'rm -rf "$WORK"' EXIT
+trap 'rm -rf "$WORK"; ensure_companion_files' EXIT
 
 cat > "$WORK/gen.tcl" <<'TCL'
 set xsa    [lindex $argv 0]

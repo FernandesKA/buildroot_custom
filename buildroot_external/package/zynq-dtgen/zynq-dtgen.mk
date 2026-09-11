@@ -46,7 +46,29 @@ $(eval $(host-generic-package))
 # in. Re-run "make host-zynq-dtgen-dirclean host-zynq-dtgen" after changing
 # the .xsa - like the custom-dts-dir mechanism itself, this isn't wired into
 # incremental rebuilds automatically.
+#
+# NOTE: this can't use LINUX_DEPENDENCIES/UBOOT_DEPENDENCIES - by the time
+# this file is included (br2-external's package/*/*.mk, pulled in via
+# external.mk), linux/linux.mk and boot/uboot/uboot.mk have already been
+# $(eval)'d, which has already expanded $(LINUX_FINAL_DEPENDENCIES) /
+# $(UBOOT_FINAL_DEPENDENCIES) into the literal prerequisite list of their
+# ".stamp_configured" rule (GNU Make expands a rule's prerequisites when the
+# rule is parsed, not when it runs). Appending to *_DEPENDENCIES here happens
+# too late to be seen by that already-generated rule, so host-zynq-dtgen
+# silently never gets built - this is the same class of ordering issue
+# documented above for LINUX_POST_PATCH_HOOKS/LINUX_KCONFIG_FIXUP_CMDS.
+#
+# Instead, add an extra prerequisite line for the existing ".stamp_configured"
+# targets directly: GNU Make merges prerequisites from multiple rules for the
+# same target, so this works regardless of include order, as long as
+# $(LINUX_TARGET_CONFIGURE)/$(UBOOT_TARGET_CONFIGURE) already have their final
+# value here (they do - both are plain $(BUILD_DIR)/<pkg>/.stamp_configured
+# paths fixed by linux.mk/uboot.mk well before this file is read).
 ifeq ($(BR2_PACKAGE_HOST_ZYNQ_DTGEN),y)
-LINUX_DEPENDENCIES += host-zynq-dtgen
-UBOOT_DEPENDENCIES += host-zynq-dtgen
+ifeq ($(BR2_LINUX_KERNEL),y)
+$(LINUX_TARGET_CONFIGURE): | host-zynq-dtgen
+endif
+ifeq ($(BR2_TARGET_UBOOT),y)
+$(UBOOT_TARGET_CONFIGURE): | host-zynq-dtgen
+endif
 endif
