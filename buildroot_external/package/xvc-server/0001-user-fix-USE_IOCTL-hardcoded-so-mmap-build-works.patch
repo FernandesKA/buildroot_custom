@@ -1,0 +1,23 @@
+Fix xvcServer.c so the "mmap" (UIO) build mode actually builds a UIO
+binary instead of silently building the ioctl variant again.
+
+The upstream Makefile selects the build mode purely via -DUSE_IOCTL
+(passed only for the "ioctl" target, omitted for the "mmap" target),
+but the source unconditionally did "#define USE_IOCTL" before the
+"#ifndef USE_IOCTL" check, which forced ioctl mode regardless of the
+compiler flag. Removing the unconditional define lets the Makefile's
+-DUSE_IOCTL flag control the mode as documented in
+jtag/zynqMP/src/user/README.md.
+
+diff --git a/jtag/zynqMP/src/user/xvcServer.c b/jtag/zynqMP/src/user/xvcServer.c
+--- a/jtag/zynqMP/src/user/xvcServer.c
++++ b/jtag/zynqMP/src/user/xvcServer.c
+@@ -23,8 +23,6 @@
+ #include <getopt.h>
+ #include <ctype.h>
+
+-#define USE_IOCTL
+-
+ #ifndef USE_IOCTL
+ #define MAP_SIZE    0x10000
+ static const char *UIO_PATH = "/dev/uio0";

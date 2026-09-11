@@ -1,0 +1,26 @@
+comment "xvc-driver needs a Linux kernel to be built"
+	depends on !BR2_LINUX_KERNEL
+
+config BR2_PACKAGE_XVC_DRIVER
+	bool "xvc-driver"
+	depends on BR2_LINUX_KERNEL
+	help
+	  Xilinx Virtual Cable (XVC) ioctl kernel driver
+	  (xilinx_xvc_driver.ko).
+
+	  Maps the memory of one or more "debug_bridge" AXI
+	  JTAG-to-BSCAN IP cores from the programmable logic and exposes
+	  them to user space as /dev/xilinx_xvc_driver* character
+	  devices, accessed via ioctl(). This is the method Xilinx
+	  recommends over the legacy UIO mmap approach (see xvc-uio).
+
+	  To bind, the target "debug_bridge" node(s) in your device tree
+	  must have "compatible = \"xlnx,xvc\";" (see xvc_fragment.dts
+	  and xvc_user_config_example.h in the package sources for how to
+	  target a non-default compatible string or multiple bridges).
+	  This depends on the actual PL bitstream/address map for your
+	  board and is not provided by this package.
+
+	  Pairs with the xvc-server package (xvcServer_ioctl).
+
+	  https://github.com/Xilinx/XilinxVirtualCable/tree/master/jtag/zynqMP/src/driver

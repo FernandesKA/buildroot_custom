@@ -1,0 +1,30 @@
+comment "xvc-uio needs a Linux kernel to be built"
+	depends on !BR2_LINUX_KERNEL
+
+config BR2_PACKAGE_XVC_UIO
+	bool "xvc-uio"
+	depends on BR2_LINUX_KERNEL
+	help
+	  Enables the Linux kernel's generic UIO framework (CONFIG_UIO,
+	  CONFIG_UIO_PDRV_GENIRQ) used by the legacy mmap-based Xilinx
+	  Virtual Cable (XVC) access method.
+
+	  This is the "generic_uio" path documented by Xilinx as a
+	  legacy alternative to the ioctl-based xvc-driver: a
+	  "debug_bridge" AXI JTAG-to-BSCAN IP core is bound to a UIO
+	  device instead of a dedicated character device, and user space
+	  (xvcServer_mmap from xvc-server) mmap()s /dev/uioN directly.
+
+	  No custom driver code ships in this package; it is a thin
+	  kernel-config enabler. To actually bind a PL IP core to UIO
+	  you still need a matching device tree node, e.g.:
+
+	    debug_bridge_0 {
+	        compatible = "generic-uio";
+	        ...
+	    };
+
+	  which depends on your board's PL bitstream/address map and is
+	  not provided here.
+
+	  Pairs with the xvc-server package (xvcServer_mmap).

@@ -1,0 +1,25 @@
+config BR2_PACKAGE_XVC_SERVER
+	bool "xvc-server"
+	help
+	  Xilinx Virtual Cable (XVC) server for Linux.
+
+	  XVC is a TCP/IP protocol (default port 2542) that lets Vivado's
+	  Hardware Manager / Lab tools drive JTAG on an FPGA over the
+	  network exactly as if a physical JTAG cable were attached,
+	  by talking to a "debug_bridge" AXI JTAG-to-BSCAN IP core in the
+	  programmable logic.
+
+	  This installs two userspace binaries built from the same
+	  xvcServer.c (XAPP1251 / Zynq UltraScale+ derivative):
+
+	    - /usr/bin/xvcServer_ioctl
+	        Talks to /dev/xilinx_xvc_driver* via ioctl().
+	        Requires the xvc-driver kernel module to be loaded and
+	        bound to a "xlnx,xvc" device tree node.
+
+	    - /usr/bin/xvcServer_mmap
+	        Talks to /dev/uioN via mmap(), using the kernel's generic
+	        UIO framework. Requires xvc-uio (or any equivalent UIO
+	        binding) and a matching "generic-uio" device tree node.
+
+	  https://github.com/Xilinx/XilinxVirtualCable
