@@ -62,6 +62,15 @@ fi
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"; ensure_companion_files' EXIT
 
+# Run xsct against a throwaway copy of the .xsa, cd'd into $WORK: opening a
+# hardware design makes xsct dump ps7_init.*/system.bit next to whatever .xsa
+# it opened, plus a .Xil/ scratch dir in the cwd - neither of which should
+# land in the board directory or the invoker's (build system's) cwd. Copying
+# the .xsa and cd'ing means all of that lands under $WORK instead, which the
+# trap above removes no matter how this script exits.
+WORK_XSA="$WORK/$(basename "$XSA")"
+cp "$XSA" "$WORK_XSA"
+
 cat > "$WORK/gen.tcl" <<'TCL'
 set xsa    [lindex $argv 0]
 set repo   [lindex $argv 1]
@@ -74,7 +83,7 @@ hsi::create_sw_design zynq_dtgen -os device_tree -proc $proc0
 hsi::generate_target -dir $outdir
 TCL
 
-if ! "$XSCT" "$WORK/gen.tcl" "$XSA" "$DTREPO" "$WORK/gen" >"$WORK/xsct.log" 2>&1; then
+if ! ( cd "$WORK" && "$XSCT" "$WORK/gen.tcl" "$WORK_XSA" "$DTREPO" "$WORK/gen" >"$WORK/xsct.log" 2>&1 ); then
 	cat "$WORK/xsct.log" >&2
 	use_fallback "xsct generation failed (see build log above)"
 	exit 0

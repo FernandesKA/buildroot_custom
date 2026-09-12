@@ -1,0 +1,79 @@
+/*
+ * RK-ZYNQ7020-F carrier board + IQ Forge PS-wrapper HDL project
+ * hdl_project: <iq_forge/zynq_rk7020_ps_wrapper>
+ *
+ * Base peripherals (gem0/sdhci0/uart0/spi0) generated from this
+ * project's own system_wrapper.xsa (xsct 2025.1, hierarchy
+ * "zynq_mini_ps_wrapper") - same MIO config as the plain
+ * zynq-rk7020f.dts board (same carrier).
+ *
+ * The only PL content is a dds_tx_chain_wrapper (LVDS IQ waveform
+ * generator) module. It has no AXI/register interface - its i_en
+ * and i_ftw inputs are tied to hardwired constants in the fabric,
+ * and it is clocked from PS FCLK0 - so it needs no devicetree node
+ * of its own. It only requires FCLK0 to stay enabled (see &clkc
+ * below; the 40MHz rate itself is set by ps7_init_gpl.c from
+ * PCW_FPGA0_PERIPHERAL_FREQMHZ=40 in the .xsa, not from this dts)
+ * and the PL bitstream to be loaded for its LVDS outputs to run.
+ *
+ * Included by the zynq-dtgen-generated root dts
+ * (BR2_PACKAGE_HOST_ZYNQ_DTGEN_FALLBACK_DIR/<name>-fixup.dtsi convention);
+ * also mirrored verbatim inside the monolithic zynq-rk7020f-iqforge.dts,
+ * which stays in place as the fallback used when xsct is unavailable.
+ */
+
+/ {
+	chosen {
+		bootargs = "earlycon";
+		stdout-path = "serial0:115200n8";
+	};
+	aliases {
+		ethernet0 = &gem0;
+		serial0 = &uart0;
+		spi0 = &spi0;
+	};
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x40000000>;
+	};
+
+	cpus {
+		cpu@0 {
+			operating-points = <666666 1000000 333333 1000000>;
+		};
+	};
+};
+
+&gem0 {
+	phy-mode = "rgmii-id";
+	status = "okay";
+	xlnx,ptp-enet-clock = <0x69f6bcb>;
+	local-mac-address = [00 0a 35 00 00 00];
+};
+&intc {
+	num_cpus = <2>;
+	num_interrupts = <96>;
+};
+&sdhci0 {
+	bootph-all;
+	status = "okay";
+	xlnx,has-cd = <0x1>;
+	xlnx,has-power = <0x0>;
+	xlnx,has-wp = <0x0>;
+};
+&spi0 {
+	is-decoded-cs = <0>;
+	num-cs = <3>;
+	status = "okay";
+};
+&uart0 {
+	bootph-all;
+	cts-override ;
+	device_type = "serial";
+	port-number = <0>;
+	status = "okay";
+};
+&clkc {
+	fclk-enable = <0x1>;
+	ps-clk-frequency = <33333333>;
+};

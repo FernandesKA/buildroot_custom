@@ -20,7 +20,7 @@ BR2_LINUX_KERNEL_UIMAGE=y
 BR2_LINUX_KERNEL_UIMAGE_LOADADDR="0x8000"
 BR2_LINUX_KERNEL_DTS_SUPPORT=y
 BR2_LINUX_KERNEL_INTREE_DTS_NAME="xilinx/zynq-rk7020f-iqforge"
-BR2_LINUX_KERNEL_CUSTOM_DTS_DIR="$(BR2_EXTERNAL_FKA_PATH)/board/zynq/RK-ZYNQ7020-F-IQFORGE/dts"
+BR2_LINUX_KERNEL_CUSTOM_DTS_DIR="$(BUILD_DIR)/zynq-dtgen/output"
 BR2_LINUX_KERNEL_DTB_OVERLAY_SUPPORT=y
 BR2_LINUX_KERNEL_NEEDS_HOST_OPENSSL=y
 BR2_PACKAGE_BUSYBOX_SHOW_OTHERS=y
@@ -69,11 +69,20 @@ BR2_TARGET_UBOOT_SPL=y
 BR2_TARGET_UBOOT_SPL_NAME="spl/boot.bin"
 BR2_TARGET_UBOOT_ZYNQ=y
 BR2_TARGET_UBOOT_ZYNQ_PS7_INIT_FILE="$(BR2_EXTERNAL_FKA_PATH)/board/zynq/RK-ZYNQ7020-F-IQFORGE/ps7_init/ps7_init_gpl.c"
-BR2_TARGET_UBOOT_CUSTOM_DTS_PATH="$(BR2_EXTERNAL_FKA_PATH)/board/zynq/RK-ZYNQ7020-F-IQFORGE/dts/xilinx/zynq-rk7020f-iqforge.dts $(BR2_EXTERNAL_FKA_PATH)/board/zynq/RK-ZYNQ7020-F-IQFORGE/dts/xilinx/zynq-7000.dtsi"
+BR2_TARGET_UBOOT_CUSTOM_DTS_PATH="$(BUILD_DIR)/zynq-dtgen/output/xilinx/zynq-rk7020f-iqforge.dts $(BUILD_DIR)/zynq-dtgen/output/xilinx/zynq-7000.dtsi $(BUILD_DIR)/zynq-dtgen/output/xilinx/pcw.dtsi $(BUILD_DIR)/zynq-dtgen/output/xilinx/zynq-rk7020f-iqforge-fixup.dtsi"
 BR2_TARGET_UBOOT_CUSTOM_MAKEOPTS="DEVICE_TREE=zynq-rk7020f-iqforge"
 BR2_PACKAGE_HOST_DOSFSTOOLS=y
 BR2_PACKAGE_HOST_GENIMAGE=y
 BR2_PACKAGE_HOST_MTOOLS=y
-# BR2_TARGET_OBLFR is not set
-# BR2_PACKAGE_BLMCUSDK is not set
 # BR2_PACKAGE_MERGEBIN is not set
+# zynq-dtgen: root dts (PS side: zynq-7000.dtsi/pcw.dtsi) generated from the
+# .xsa below via xsct; falls back to the committed dts in FALLBACK_DIR (see
+# its SOURCE.txt in the build dir) if xsct/the .xsa aren't available. The
+# board-specific overrides (chosen/aliases/gem0/sdhci0/spi0/uart0/clkc) stay
+# hand-written in dts/xilinx/zynq-rk7020f-iqforge-fixup.dtsi - the PL side
+# (dds_tx_chain_wrapper) has no AXI/register interface and needs no
+# devicetree node of its own.
+BR2_PACKAGE_HOST_ZYNQ_DTGEN=y
+BR2_PACKAGE_HOST_ZYNQ_DTGEN_DTS_NAME="zynq-rk7020f-iqforge"
+BR2_PACKAGE_HOST_ZYNQ_DTGEN_XSA_PATH="$(BR2_EXTERNAL_FKA_PATH)/board/zynq/RK-ZYNQ7020-F-IQFORGE/system_wrapper.xsa"
+BR2_PACKAGE_HOST_ZYNQ_DTGEN_FALLBACK_DIR="$(BR2_EXTERNAL_FKA_PATH)/board/zynq/RK-ZYNQ7020-F-IQFORGE/dts/xilinx"
