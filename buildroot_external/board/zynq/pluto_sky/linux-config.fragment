@@ -1,6 +1,14 @@
 # SPI
+# CONFIG_SPI_XILINX is the AXI Quad SPI *PL fabric IP core* driver -
+# irrelevant here, we have no such IP. Our board's spi0/spi1 nodes are
+# compatible = "xlnx,zynq-spi-r1p6" (PS7's own hardened SPI controller,
+# zynq-7000.dtsi), which is handled by spi-cadence.c/CONFIG_SPI_CADENCE
+# - without it there's no spi_master bound, so the overlay's ad9361@0
+# spidev child node can never get a /dev/spidevX.0 node no matter what
+# the overlay itself says.
 CONFIG_SPI=y
 CONFIG_SPI_MASTER=y
+CONFIG_SPI_CADENCE=y
 CONFIG_SPI_XILINX=y
 CONFIG_SPI_BITBANG=y
 CONFIG_SPI_SPIDEV=y
