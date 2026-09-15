@@ -19,7 +19,11 @@ case "$1" in
     fi
 
     cd "$IQ_FORGE_DIR" || exit 0
-    ./iq_forge_app
+    # Backgrounded: iq_forge_app now stays running forever (it hosts a TCP
+    # control server, see iq_forge_fw's control_server.h) instead of
+    # exiting right after bring-up like it used to -- running it in the
+    # foreground here would hang boot at this init step.
+    ./iq_forge_app > /var/log/iq_forge_app.log 2>&1 &
     ;;
   stop)
     ;;
