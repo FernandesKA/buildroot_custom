@@ -67,6 +67,21 @@ make BR2_EXTERNAL=$BR2_EXTERNAL zynq_rk7020f_defconfig
 make -j$(nproc)
 ```
 
+#### Сборка во внешней директории (out-of-tree)
+
+Чтобы держать несколько конфигураций параллельно и не засорять дерево Buildroot, можно собирать в отдельной директории через `O=`:
+
+```bash
+export BR2_EXTERNAL=$(pwd)/buildroot_external
+make -C buildroot O=$(pwd)/output/zynq_rk7020f BR2_EXTERNAL=$BR2_EXTERNAL zynq_rk7020f_defconfig
+cd output/zynq_rk7020f
+make -j$(nproc)
+```
+
+`make ... defconfig` с `O=` создаёт в выходной директории обёрточный `Makefile`, поэтому дальнейшие команды (`make`, `make menuconfig`, `make sdk`, `make linux-rebuild` и т.д.) выполняются прямо из неё. Путь к `BR2_EXTERNAL` запоминается в `.br2-external.mk`, повторно передавать его не нужно.
+
+Артефакты в этом случае находятся в `<O>/images/` вместо `buildroot/output/images/`.
+
 ### 3. Собрать SDK (опционально)
 
 ```bash
