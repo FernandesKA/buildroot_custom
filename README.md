@@ -67,20 +67,42 @@ make BR2_EXTERNAL=$BR2_EXTERNAL zynq_rk7020f_defconfig
 make -j$(nproc)
 ```
 
-#### Сборка во внешней директории (out-of-tree)
+### Сборка в отдельную директорию (out-of-tree)
 
-Чтобы держать несколько конфигураций параллельно и не засорять дерево Buildroot, можно собирать в отдельной директории через `O=`:
+Чтобы не трогать существующие артефакты (`buildroot/output/`) и результаты других сборок, можно указать свою директорию через `O=`. Каждая конфигурация получает собственные `build/`, `host/`, `images/` и `.config`, а скачанные исходники общие (`dl/` внутри `buildroot/`, либо `BR2_DL_DIR`).
 
 ```bash
-export BR2_EXTERNAL=$(pwd)/buildroot_external
-make -C buildroot O=$(pwd)/output/zynq_rk7020f BR2_EXTERNAL=$BR2_EXTERNAL zynq_rk7020f_defconfig
-cd output/zynq_rk7020f
-make -j$(nproc)
+export BR2_EXTERNAL_FKA_PATH=$(pwd)/buildroot_external
+export OUT=$HOME/build/br_custom/qemu_aarch64_pocket # любая новая директория
+cd buildroot
+make O=$OUT BR2_EXTERNAL=$BR2_EXTERNAL_FKA_PATH qemu_aarch64_pocket_defconfig
+make O=$OUT -j$(nproc)
 ```
 
-`make ... defconfig` с `O=` создаёт в выходной директории обёрточный `Makefile`, поэтому дальнейшие команды (`make`, `make menuconfig`, `make sdk`, `make linux-rebuild` и т.д.) выполняются прямо из неё. Путь к `BR2_EXTERNAL` запоминается в `.br2-external.mk`, повторно передавать его не нужно.
+Директория `$OUT` создаётся автоматически, `output/` не затрагивается. `O=` нужно передавать в каждый вызов `make` для этой сборки. Удобнее работать из самой директории сборки: после первого запуска в ней появляется Makefile-обёртка.
 
-Артефакты в этом случае находятся в `<O>/images/` вместо `buildroot/output/images/`.
+```bash
+cd $OUT
+make menuconfig
+make -j$(nproc)
+make sdk
+```
+
+Артефакты лежат в `$OUT/images/`. Для QEMU aarch64 Pocket запуск:
+
+```bash
+$OUT/images/start-qemu.sh
+$OUT/images/start-pocket.sh
+```
+
+Регистры PL только хранят записанное; модули PL эмулируются (пакет `pl-emu`). Эмуляция PL — это пакет `host-pl-emu` (`package/pl-emu`, menuconfig: **External options → Host Packages**); он включается автоматически для aarch64 с `host-qemu`. Манифест pocket содержит базу окна PL `0x81000000` (переопределяется `BR2_PACKAGE_HOST_PL_EMU_BASE`), параметры модулей и устройство `fpga-manager`. Проброс портов гостя на localhost (по умолчанию 2006, 2281, 2345): **External options → QEMU → BR2_FKA_QEMU_HOSTFWD**.
+
+Если поменялись устройства QEMU (`package/pl-emu/qemu`) или пакет включили/выключили, пересоберите QEMU. Манифест, адрес и параметры применяются обычным `make`:
+
+```bash
+make host-qemu-dirclean host-qemu # заново добавить устройства и собрать QEMU
+make # пересобрать образ, в т.ч. pocket-virt.dtb
+```
 
 ### 3. Собрать SDK (опционально)
 
