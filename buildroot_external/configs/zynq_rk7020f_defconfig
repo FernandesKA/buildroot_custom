@@ -80,6 +80,9 @@ BR2_PACKAGE_HOST_GENIMAGE=y
 BR2_PACKAGE_HOST_MTOOLS=y
 BR2_PACKAGE_HOST_UBOOT_TOOLS_BOOT_SCRIPT=y
 BR2_PACKAGE_HOST_UBOOT_TOOLS_BOOT_SCRIPT_SOURCE="$(BR2_EXTERNAL_FKA_PATH)/board/zynq/RK-ZYNQ7020-F/boot/boot.cmd"
+# libconfig parser for the libconfig-format sw-description; this buildroot
+# (2025.11) does not select it automatically for SWUpdate.
+BR2_PACKAGE_LIBCONFIG=y
 BR2_PACKAGE_SWUPDATE=y
 BR2_PACKAGE_SWUPDATE_CONFIG="$(BR2_EXTERNAL_FKA_PATH)/board/zynq/RK-ZYNQ7020-F/swupdate/swupdate.config"
 BR2_PACKAGE_SWUPDATE_WEBSERVER=y
