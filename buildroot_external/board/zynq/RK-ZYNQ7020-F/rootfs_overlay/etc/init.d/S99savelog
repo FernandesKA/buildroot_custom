@@ -1,0 +1,23 @@
+#!/bin/sh
+# Persist the boot log and a small boot report to /data/logs.
+
+start() {
+	[ -d /data/logs ] || mkdir -p /data/logs
+	[ -f /data/logs/dmesg.last ] && mv -f /data/logs/dmesg.last /data/logs/dmesg.prev
+	dmesg > /data/logs/dmesg.last 2>/dev/null
+	{
+		echo "uptime: $(cat /proc/uptime)"
+		echo "cmdline: $(cat /proc/cmdline)"
+		echo "uname: $(uname -a)"
+		echo "slot: $(fw_printenv -n bootslot 2>/dev/null)"
+		echo "bootcount: $(fw_printenv -n bootcount 2>/dev/null)"
+		echo "upgrade_available: $(fw_printenv -n upgrade_available 2>/dev/null)"
+		echo "ip: $(ip -br a 2>/dev/null | tr '\n' ' ')"
+	} > /data/logs/bootinfo.last
+	sync
+}
+
+case "$1" in
+	start) start;;
+	*) exit 0;;
+esac

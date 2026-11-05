@@ -8,6 +8,41 @@ CONFIG_SPL_OF_LIST="zynq-rk7020f"
 CONFIG_SPL_FS_FAT=y
 CONFIG_SPL_MMC=y
 CONFIG_SPL_OS_BOOT=n
-CONFIG_ENV_IS_IN_FAT=n
-CONFIG_ENV_FAT_INTERFACE=n
-CONFIG_ENV_IS_NOWHERE=y
+
+# --- A/B OTA: persistent environment in the FAT boot partition ---
+# NOTE: the Zynq board code (board/xilinx/zynq/board.c) overrides
+# env_get_location() and only supports FAT / EXT4 / NOWHERE for SD boot.
+# ENV_IS_IN_MMC is NOT recognized and makes env_init() fail with -ENODEV,
+# so the environment must live in a FAT file.
+CONFIG_ENV_IS_NOWHERE=n
+CONFIG_ENV_IS_IN_MMC=n
+CONFIG_ENV_IS_IN_NAND=n
+CONFIG_ENV_IS_IN_SPI_FLASH=n
+CONFIG_ENV_IS_IN_FAT=y
+CONFIG_ENV_FAT_INTERFACE="mmc"
+CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
+CONFIG_ENV_FAT_FILE="uboot.env"
+CONFIG_ENV_SIZE=0x2000
+CONFIG_SYS_REDUNDAND_ENVIRONMENT=y
+CONFIG_ENV_FAT_FILE_REDUND="uboot-redund.env"
+
+# --- A/B OTA: boot count / rollback ---
+CONFIG_BOOTCOUNT_LIMIT=y
+CONFIG_BOOTCOUNT_ENV=y
+CONFIG_BOOTCOUNT_BOOTLIMIT=3
+
+# --- A/B OTA: explicit boot command (load and source boot.scr) ---
+CONFIG_USE_BOOTCOMMAND=y
+CONFIG_BOOTCOMMAND="mmc dev 0; if load mmc 0:1 0x3000000 /boot.scr; then source 0x3000000; fi"
+
+# --- A/B OTA: arm the Cadence (Zynq PS SWDT) watchdog in U-Boot ---
+# The kernel only opens /dev/watchdog from S20watchdog, i.e. after the
+# rootfs is mounted. A boot that fails earlier (kernel panic, rootfs mount
+# failure) would therefore never reset and bootcount would never grow.
+# Starting the watchdog in U-Boot (serviced via the cyclic) covers that
+# window; the kernel daemon takes over once userspace starts.
+CONFIG_WDT=y
+CONFIG_WDT_CDNS=y
+CONFIG_WATCHDOG=y
+CONFIG_WATCHDOG_AUTOSTART=y
+CONFIG_WATCHDOG_TIMEOUT_MSECS=60000

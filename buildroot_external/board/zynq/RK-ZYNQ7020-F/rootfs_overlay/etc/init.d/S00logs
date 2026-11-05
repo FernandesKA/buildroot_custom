@@ -1,0 +1,32 @@
+#!/bin/sh
+# Prepare persistent logging on the shared /data partition and expose it
+# through the SWUpdate web UI (document root /var/www/swupdate).
+
+start() {
+	# /data comes from /etc/fstab, but S00 may run before the regular mount
+	# step; make sure it is available.
+	grep -q ' /data ' /proc/mounts || mount /data 2>/dev/null
+
+	mkdir -p /data/logs
+	mkdir -p /var/www/swupdate
+	ln -sfn /data/logs /var/www/swupdate/logs
+
+	if [ ! -f /data/logs/index.html ]; then
+		cat > /data/logs/index.html <<'EOF'
+<!doctype html><meta charset="utf-8"><title>Logs</title>
+<h1>Device logs</h1>
+<ul>
+<li><a href="messages">messages (syslog)</a></li>
+<li><a href="messages.0">messages.0 (rotated)</a></li>
+<li><a href="dmesg.last">dmesg.last (current boot)</a></li>
+<li><a href="dmesg.prev">dmesg.prev (previous boot)</a></li>
+<li><a href="bootinfo.last">bootinfo.last</a></li>
+</ul>
+EOF
+	fi
+}
+
+case "$1" in
+	start) start;;
+	*) exit 0;;
+esac

@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# /proc/sys/kernel/hotplug only exists when the kernel is built with
+# CONFIG_UEVENT_HELPER. mdev -d listens on the uevent netlink socket, so the
+# legacy helper is optional; guard the write to avoid a boot-time error.
+HOTPLUG=/proc/sys/kernel/hotplug
+
+start() {
+	printf 'Starting mdev: '
+	[ -e "$HOTPLUG" ] && echo /sbin/mdev > "$HOTPLUG"
+	mdev -d
+	mdev -s
+	echo 'OK'
+}
+
+stop() {
+	printf 'Stopping mdev: '
+	kill "$(pidof mdev)" 2>/dev/null
+	[ -e "$HOTPLUG" ] && echo '' > "$HOTPLUG"
+	echo 'OK'
+}
+
+case "$1" in
+	start|stop)
+		"$1" ;;
+	restart|reload)
+		stop; start ;;
+	*)
+		echo "Usage: $0 {start|stop|restart}"
+		exit 1
+esac

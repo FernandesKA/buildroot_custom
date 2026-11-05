@@ -1,0 +1,57 @@
+#!/bin/sh
+# SWUpdate web UI (Mongoose).
+#
+# Serves the default website from /var/www/swupdate on port 8080 and accepts
+# .swu uploads. The daemon is started with the software set/mode matching the
+# *inactive* A/B slot (running A -> stable,to-b), because the web upload does
+# not carry a mode. After an update the board reboots, this service evaluates
+# bootslot again and starts with the opposite mode.
+#
+# The same daemon owns the IPC socket used by swupdate-client, so
+# /usr/sbin/fwupdate sends its image through it when it is running.
+
+DAEMON="/usr/bin/swupdate"
+PIDFILE="/var/run/swupdate.pid"
+WWW="/var/www/swupdate"
+PORT="8080"
+
+start() {
+	slot=$(fw_printenv -n bootslot 2>/dev/null)
+	case "$slot" in
+		b) mode="to-a" ;;
+		*) mode="to-b" ;;
+	esac
+
+	printf 'Starting swupdate web UI (slot %s, %s): ' "${slot:-a}" "$mode"
+	start-stop-daemon -S -q -b -m -p "$PIDFILE" -x "$DAEMON" -- \
+		-B uboot -p "reboot" -e "stable,${mode}" \
+		-w "-l -r ${WWW} -p ${PORT}"
+	if [ $? -eq 0 ]; then
+		echo "OK (http://<board>:${PORT}/)"
+	else
+		echo 'FAIL'
+	fi
+}
+
+stop() {
+	printf 'Stopping swupdate web UI: '
+	start-stop-daemon -K -q -p "$PIDFILE"
+	if [ $? -eq 0 ]; then
+		echo 'OK'
+	else
+		echo 'FAIL'
+	fi
+}
+
+restart() {
+	stop
+	sleep 1
+	start
+}
+
+case "$1" in
+	start) start;;
+	stop) stop;;
+	restart) restart;;
+	*) echo "Usage: $0 {start|stop|restart}"; exit 1;;
+esac

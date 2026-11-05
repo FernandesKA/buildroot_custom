@@ -1,0 +1,47 @@
+#!/bin/sh
+# Start the hardware watchdog daemon early.
+#
+# U-Boot starts the Cadence SWDT before booting the kernel (WDT autostart);
+# this daemon opens /dev/watchdog once userspace is up and takes over.
+#
+# watchdog 5.16 flags (see /sbin/watchdog --help):
+#   -F  stay in the foreground (start-stop-daemon backgrounds it)
+#   -s  sync filesystems before a watchdog-triggered reboot
+# Do NOT pass -q here: it means --no-action, which makes the daemon skip
+# opening /dev/watchdog entirely and nothing gets petted.
+
+DAEMON="/sbin/watchdog"
+PIDFILE="/var/run/watchdog.pid"
+
+start() {
+	printf 'Starting watchdog: '
+	start-stop-daemon -S -q -b -m -p "$PIDFILE" -x "$DAEMON" -- -F -s
+	if [ $? -eq 0 ]; then
+		echo 'OK'
+	else
+		echo 'FAIL'
+	fi
+}
+
+stop() {
+	printf 'Stopping watchdog: '
+	start-stop-daemon -K -q -p "$PIDFILE"
+	if [ $? -eq 0 ]; then
+		echo 'OK'
+	else
+		echo 'FAIL'
+	fi
+}
+
+restart() {
+	stop
+	sleep 1
+	start
+}
+
+case "$1" in
+	start) start;;
+	stop) stop;;
+	restart) restart;;
+	*) echo "Usage: $0 {start|stop|restart}"; exit 1;;
+esac

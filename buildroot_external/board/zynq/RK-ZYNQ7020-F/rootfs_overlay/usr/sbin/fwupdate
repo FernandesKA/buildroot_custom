@@ -1,0 +1,51 @@
+#!/bin/sh
+# A/B OTA update helper.
+#
+# Installs a .swu bundle into the inactive slot and reboots. The target slot
+# is chosen from the current U-Boot "bootslot" variable:
+#   running slot B -> install slot A   (stable,to-a)
+#   running slot A -> install slot B   (stable,to-b)
+#
+# Usage: fwupdate [path-to.swu|-]   (default: /data/update.swu, - = stdin)
+#
+# If the SWUpdate web daemon (S80swupdate) is running, the image is handed to
+# it via swupdate-client; otherwise a standalone swupdate instance is used.
+
+SWU="${1:-/data/update.swu}"
+
+if [ "$SWU" != "-" ] && [ ! -f "$SWU" ]; then
+	echo "fwupdate: $SWU not found" >&2
+	echo "Usage: fwupdate [path-to.swu|-]" >&2
+	exit 1
+fi
+
+slot=$(fw_printenv -n bootslot 2>/dev/null)
+case "$slot" in
+	b) mode="to-a" ;;
+	*) mode="to-b" ;;
+esac
+
+echo "fwupdate: running slot=${slot:-a}, installing to ${mode#to-}"
+
+if [ -S /tmp/sockinstctrl ] && [ -f /var/run/swupdate.pid ]; then
+	echo "fwupdate: using running swupdate web daemon"
+	if [ "$SWU" = "-" ]; then
+		swupdate-client -e "stable,${mode}" -
+	else
+		swupdate-client -e "stable,${mode}" "$SWU"
+	fi
+else
+	if [ "$SWU" = "-" ]; then
+		swupdate -v -B uboot -p "reboot" -i /dev/stdin -e "stable,${mode}"
+	else
+		swupdate -v -B uboot -p "reboot" -i "$SWU" -e "stable,${mode}"
+	fi
+fi
+
+if [ $? -eq 0 ]; then
+	echo "fwupdate: update OK, rebooting"
+	reboot
+else
+	echo "fwupdate: update FAILED" >&2
+	exit 1
+fi

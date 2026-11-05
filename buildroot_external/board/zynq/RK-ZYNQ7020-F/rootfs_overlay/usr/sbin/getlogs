@@ -1,0 +1,43 @@
+#!/bin/sh
+# Collect logs and system state into a gzip-compressed tar archive.
+#
+# Usage:
+#   getlogs              -> /tmp/logs.tar.gz
+#   getlogs out.tar.gz   -> out.tar.gz
+#   getlogs -            -> write the archive to stdout (for ssh/scp)
+#
+# Example:
+#   ssh root@<device> getlogs - > logs.tar.gz
+
+OUT="${1:-/tmp/logs.tar.gz}"
+D=$(mktemp -d /tmp/getlogs.XXXXXX) || exit 1
+
+{
+	echo "=== date ==="; date
+	echo "=== uptime ==="; cat /proc/uptime
+	echo "=== cmdline ==="; cat /proc/cmdline
+	echo "=== uname ==="; uname -a
+	echo "=== env ==="; fw_printenv 2>/dev/null
+	echo "=== ip ==="; ip -br a 2>/dev/null
+	echo "=== route ==="; ip route 2>/dev/null
+	echo "=== mounts ==="; mount
+	echo "=== lsblk ==="; lsblk 2>/dev/null
+	echo "=== ps ==="; ps
+	echo "=== dmesg (ring) ==="; dmesg
+	echo "=== messages ==="; cat /data/logs/messages 2>/dev/null || cat /var/log/messages 2>/dev/null
+} > "$D/all.txt"
+
+cp /data/logs/messages "$D/" 2>/dev/null
+cp /data/logs/messages.0 "$D/" 2>/dev/null
+cp /data/logs/dmesg.last "$D/" 2>/dev/null
+cp /data/logs/dmesg.prev "$D/" 2>/dev/null
+cp /data/logs/bootinfo.last "$D/" 2>/dev/null
+
+if [ "$OUT" = "-" ]; then
+	tar -cf - -C "$D" . | gzip -c
+else
+	tar -cf - -C "$D" . | gzip -c > "$OUT"
+	echo "logs written to $OUT" >&2
+fi
+
+rm -rf "$D"

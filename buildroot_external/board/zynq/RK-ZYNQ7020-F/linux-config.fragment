@@ -20,6 +20,13 @@ CONFIG_PANIC_TIMEOUT=5
 CONFIG_OF_OVERLAY=y
 CONFIG_OF_DYNAMIC=y
 
+# --- A/B OTA watchdog: Zynq-7000 PS SWDT (cadence), armed early, reset on timeout ---
+# A hung kernel/rootfs must trigger a reset so U-Boot's bootcount can roll back.
+CONFIG_WATCHDOG=y
+CONFIG_CADENCE_WATCHDOG=y
+CONFIG_WATCHDOG_NOWAYOUT=y
+CONFIG_WATCHDOG_HANDLE_BOOT_ENABLED=y
+
 # --- Uncomment below for debug builds only ---
 # CONFIG_DEBUG_KERNEL=y
 # CONFIG_DYNAMIC_DEBUG=y

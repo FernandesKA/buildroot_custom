@@ -55,6 +55,14 @@
 	port-number = <0>;
 	status = "okay";
 };
+/* A/B OTA: kernel watchdog (nowayout) resets a hung slot so U-Boot can roll
+ * back after bootlimit attempts. U-Boot also arms the same SWDT before boot,
+ * so a failure before userspace starts still produces a reset. */
+&watchdog0 {
+	status = "okay";
+	reset-on-timeout;
+	timeout-sec = <60>;
+};
 &clkc {
 	bootph-all;
 	fclk-enable = <0x1>;

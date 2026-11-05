@@ -1,0 +1,21 @@
+#!/bin/sh
+# A/B OTA boot confirmation.
+#
+# Running this script means the kernel booted and the rootfs mounted cleanly,
+# so the current slot is declared good: reset U-Boot's bootcount (and clear
+# upgrade_available) so the slot stays active. If the boot had failed before
+# this point, the watchdog resets the board, U-Boot increments bootcount and,
+# after bootlimit attempts, rolls back to the previous slot.
+
+case "$1" in
+	start)
+		echo "A/B: confirming boot (reset bootcount)"
+		fw_setenv bootcount 0 2>/dev/null || true
+		fw_setenv upgrade_available 0 2>/dev/null || true
+		;;
+	stop|restart)
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart}"
+		;;
+esac

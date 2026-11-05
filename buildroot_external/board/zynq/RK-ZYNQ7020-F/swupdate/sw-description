@@ -1,0 +1,44 @@
+software =
+{
+	version = "0.1.0";
+	description = "zynq_rk7020f A/B rootfs update";
+
+	/* Two install modes share the same rootfs image. The fwupdate script
+	 * reads the current bootslot and calls swupdate with the matching
+	 * mode:  -e "stable,to-a"  (when running slot B) writes slot A,
+	 *        -e "stable,to-b"  (when running slot A) writes slot B.
+	 * After a successful write the U-Boot env is switched to the new
+	 * slot and upgrade_available is set, so U-Boot tries it on reboot. */
+
+	stable: {
+		to-a: {
+			images: (
+				{
+					filename = "rootfs.ext4";
+					device = "/dev/mmcblk0p2";
+					sha256 = "@ROOTFS_SHA256@";
+				}
+			);
+			bootenv: (
+				{ name = "bootslot"; value = "a"; },
+				{ name = "upgrade_available"; value = "1"; },
+				{ name = "bootcount"; value = "0"; }
+			);
+		};
+
+		to-b: {
+			images: (
+				{
+					filename = "rootfs.ext4";
+					device = "/dev/mmcblk0p3";
+					sha256 = "@ROOTFS_SHA256@";
+				}
+			);
+			bootenv: (
+				{ name = "bootslot"; value = "b"; },
+				{ name = "upgrade_available"; value = "1"; },
+				{ name = "bootcount"; value = "0"; }
+			);
+		};
+	};
+}

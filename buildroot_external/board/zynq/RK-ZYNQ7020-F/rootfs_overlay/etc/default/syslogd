@@ -1,0 +1,4 @@
+# BusyBox syslogd arguments (sourced by /etc/init.d/S01syslogd).
+# Keep logs on the shared /data partition so they survive slot switches and
+# OTA updates; rotate at 1 MiB.
+SYSLOGD_ARGS="-O /data/logs/messages -s 1024"
