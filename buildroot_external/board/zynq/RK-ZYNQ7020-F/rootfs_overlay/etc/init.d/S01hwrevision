@@ -1,0 +1,28 @@
+#!/bin/sh
+# Generate /etc/hwrevision for the SWUpdate hardware-compatibility check.
+#
+# The file format is "<board> <revision>"; swupdate compares <revision>
+# (strcmp or "re:" regex) against the "hardware-compatibility" list in
+# sw-description and rejects mismatching images before writing anything.
+#
+# The board identity is the first root compatible of the *running* device
+# tree, so it always describes the hardware the kernel actually booted on.
+# Runs before S50abconfirm/S80swupdate; regenerated on every boot, so it is
+# correct in both A/B slots and after updates.
+
+COMPAT=/proc/device-tree/compatible
+
+start() {
+	[ -r "$COMPAT" ] || {
+		echo "hwrevision: no device tree compatible found" >&2
+		exit 0
+	}
+	board=$(tr '\0' '\n' < "$COMPAT" | head -n 1)
+	[ -n "$board" ] || exit 0
+	echo "$board $board" > /etc/hwrevision
+}
+
+case "$1" in
+	start) start;;
+	*) exit 0;;
+esac

@@ -9,6 +9,9 @@
 #include "zynq-7000.dtsi"
 
 / {
+	/* board identity for the SWUpdate hardware-compatibility check
+	 * (S01hwrevision writes the first entry into /etc/hwrevision) */
+	compatible = "fka,zynq-rk7020f", "xlnx,zynq-7000";
 	chosen {
 		bootargs = "earlycon";
 		stdout-path = "serial0:115200n8";

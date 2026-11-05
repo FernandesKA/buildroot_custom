@@ -121,9 +121,27 @@ http://<device>:8080/logs/messages  # syslog
 Ссылку `/var/www/swupdate/logs -> /data/logs` создаёт `S00logs`, а
 `S99savelog` сохраняет dmesg и `bootinfo.last` при загрузке.
 
+
+## Защита от «чужой» прошивки (hardware-compatibility)
+
+Образ проверяется по плате до записи:
+
+- корневой узел DTS начинается с `compatible = "fka,zynq-rk7020f"`;
+- `S01hwrevision` на каждой загрузке пишет первый compatible в
+  `/etc/hwrevision` (формат `"<board> <revision>"`);
+- `sw-description` содержит `hardware-compatibility = ( "fka,zynq-rk7020f" );`,
+  SWUpdate собран с `CONFIG_HW_COMPATIBILITY=y`;
+- `.swu` от другой платы (или без секции) отвергается:
+  `SW not compatible with hardware`, ничего не пишется.
+
+Проверено на плате: adrv9002-bundle отвергнут, rk7020f-bundle принят.
+
 ## Ключевые файлы
 
 - `boot/boot.cmd` — A/B boot-скрипт (компилируется в `boot.scr`).
+- `rootfs_overlay/etc/init.d/S01hwrevision` — пишет `/etc/hwrevision` из
+  compatible первого узла DTB; вместе с `hardware-compatibility` в
+  `sw-description` это не даёт прошить образ от другой платы.
 - `uboot-config.fragment` — bootcount, redundant env, watchdog, bootcmd.
 - `linux-config.fragment` — cadence watchdog (nowayout).
 - `swupdate/sw-description` + `swupdate/swupdate.config` — конфигурация SWUpdate.

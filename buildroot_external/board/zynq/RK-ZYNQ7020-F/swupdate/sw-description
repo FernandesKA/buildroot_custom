@@ -3,6 +3,16 @@ software =
 	version = "0.1.0";
 	description = "zynq_rk7020f A/B rootfs update";
 
+	/* Board gate: S01hwrevision stores the board identity (the first root
+	 * compatible of the running DTB, "fka,zynq-rk7020f") in
+	 * /etc/hwrevision; SWUpdate refuses this image on any board whose
+	 * revision does not match ("SW not compatible with hardware").
+	 * This is what prevents accidentally flashing, e.g., an adrv9002
+	 * bundle onto a rk7020f and vice versa. */
+	hardware-compatibility = (
+		"fka,zynq-rk7020f"
+	);
+
 	/* Two install modes share the same rootfs image. The fwupdate script
 	 * reads the current bootslot and calls swupdate with the matching
 	 * mode:  -e "stable,to-a"  (when running slot B) writes slot A,
