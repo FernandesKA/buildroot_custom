@@ -88,20 +88,7 @@ make -j$(nproc)
 make sdk
 ```
 
-Артефакты лежат в `$OUT/images/`. Для QEMU aarch64 Pocket запуск:
-
-```bash
-$OUT/images/start-qemu.sh
-$OUT/images/start-pocket.sh
-```
-
-Регистры PL только хранят записанное; модули PL эмулируются (пакет `pl-emu`). Эмуляция PL — это пакет `host-pl-emu` (`package/pl-emu`, menuconfig: **External options → Host Packages**); он включается автоматически для aarch64 с `host-qemu`. Манифест pocket содержит базу окна PL `0x81000000` (переопределяется `BR2_PACKAGE_HOST_PL_EMU_BASE`), параметры модулей и устройство `fpga-manager`. Проброс портов гостя на localhost (по умолчанию 2006, 2281, 2345): **External options → QEMU → BR2_FKA_QEMU_HOSTFWD**.
-
-Если поменялись устройства QEMU (`package/pl-emu/qemu`) или пакет включили/выключили, пересоберите QEMU. Манифест, адрес и параметры применяются обычным `make`:
-
-```bash
-make host-qemu-dirclean host-qemu # заново добавить устройства и собрать QEMU
-make # пересобрать образ, в т.ч. pocket-virt.dtb
+Артефакты лежат в `$OUT/images/`.
 ```
 
 ### 3. Собрать SDK (опционально)
